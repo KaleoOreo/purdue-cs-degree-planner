@@ -12,3 +12,9 @@ class Course:
     def __post_init__(self) -> None:
         if self.credits <= 0:
             raise ValueError("credits must be greater than 0")
+
+    def prerequisites_satisfied(self, completed: set[str]) -> bool:
+        return all(
+            prerequisite in completed
+            for prerequisite in self.prerequisites
+        )

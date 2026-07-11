@@ -13,3 +13,9 @@ def test_course_stores_basic_fields():
 def test_course_rejects_zero_credits():
     with pytest.raises(ValueError):
         Course("CS 18000", "Problem Solving", 0, "core")
+
+
+def test_prerequisites_satisfied_when_completed():
+    course = Course("CS 18200", "Foundations", 3, "core", ["CS 18000"])
+
+    assert course.prerequisites_satisfied({"CS 18000"})
