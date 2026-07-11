@@ -11,3 +11,18 @@ def find_available_courses(
         if course.code not in completed
         and course.prerequisites_satisfied(completed)
     ]
+
+
+def build_semester_plan(
+    available_courses: list[Course],
+    max_credits: int,
+) -> list[Course]:
+    plan: list[Course] = []
+    total_credits = 0
+
+    for course in available_courses:
+        if total_credits + course.credits <= max_credits:
+            plan.append(course)
+            total_credits += course.credits
+
+    return plan
