@@ -25,3 +25,9 @@ def test_prerequisites_not_satisfied_when_missing():
     course = Course("CS 18200", "Foundations", 3, "core", ["CS 18000"])
 
     assert not course.prerequisites_satisfied(set())
+
+
+def test_prerequisites_satisfied_when_course_has_none():
+    course = Course("CS 18000", "Problem Solving", 4, "core")
+
+    assert course.prerequisites_satisfied(set())
