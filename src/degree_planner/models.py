@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -7,6 +7,7 @@ class Course:
     title: str
     credits: int
     category: str
+    prerequisites: list[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.credits <= 0:
