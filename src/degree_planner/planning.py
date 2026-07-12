@@ -29,3 +29,12 @@ def build_semester_plan(
             total_credits += course.credits
 
     return plan
+
+
+def plan_next_semester(
+    courses: list[Course],
+    completed: set[str],
+    max_credits: int,
+) -> list[Course]:
+    available = find_available_courses(courses, completed)
+    return build_semester_plan(available, max_credits)

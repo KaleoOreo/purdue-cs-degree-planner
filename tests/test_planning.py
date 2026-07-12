@@ -1,7 +1,11 @@
 import pytest
 
 from degree_planner.models import Course
-from degree_planner.planning import build_semester_plan, find_available_courses
+from degree_planner.planning import (
+    build_semester_plan,
+    find_available_courses,
+    plan_next_semester,
+)
 
 
 def test_find_available_courses_excludes_locked_courses():
@@ -61,3 +65,15 @@ def test_build_semester_plan_allows_exact_credit_limit():
 def test_build_semester_plan_rejects_zero_max_credits():
     with pytest.raises(ValueError):
         build_semester_plan([], max_credits=0)
+
+
+def test_plan_next_semester_filters_then_applies_credit_limit():
+    courses = [
+        Course("CS 18000", "Problem Solving", 4, "core"),
+        Course("CS 18200", "Foundations", 3, "core", ["CS 18000"]),
+        Course("CS 24000", "Programming in C", 3, "core", ["CS 18000", "CS 18200"]),
+    ]
+
+    plan = plan_next_semester(courses, {"CS 18000"}, max_credits=3)
+
+    assert [course.code for course in plan] == ["CS 18200"]
