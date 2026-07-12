@@ -17,6 +17,9 @@ def build_semester_plan(
     available_courses: list[Course],
     max_credits: int,
 ) -> list[Course]:
+    if max_credits <= 0:
+        raise ValueError("max_credits must be greater than 0")
+
     plan: list[Course] = []
     total_credits = 0
 

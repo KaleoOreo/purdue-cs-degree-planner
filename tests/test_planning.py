@@ -1,3 +1,5 @@
+import pytest
+
 from degree_planner.models import Course
 from degree_planner.planning import build_semester_plan, find_available_courses
 
@@ -54,3 +56,8 @@ def test_build_semester_plan_allows_exact_credit_limit():
     plan = build_semester_plan(available, max_credits=7)
 
     assert [course.code for course in plan] == ["CS 18000", "CS 18200"]
+
+
+def test_build_semester_plan_rejects_zero_max_credits():
+    with pytest.raises(ValueError):
+        build_semester_plan([], max_credits=0)
