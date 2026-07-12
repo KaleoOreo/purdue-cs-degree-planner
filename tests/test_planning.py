@@ -43,3 +43,14 @@ def test_build_semester_plan_respects_max_credits():
     plan = build_semester_plan(available, max_credits=6)
 
     assert [course.code for course in plan] == ["CS 18000"]
+
+
+def test_build_semester_plan_allows_exact_credit_limit():
+    available = [
+        Course("CS 18000", "Problem Solving", 4, "core"),
+        Course("CS 18200", "Foundations", 3, "core"),
+    ]
+
+    plan = build_semester_plan(available, max_credits=7)
+
+    assert [course.code for course in plan] == ["CS 18000", "CS 18200"]
