@@ -39,11 +39,22 @@ def save_course(connection: sqlite3.Connection, course: Course) -> None:
     connection.commit()
 
 
+def load_prerequisites(connection: sqlite3.Connection, course_code: str) -> list[str]:
+    rows = connection.execute(
+        "SELECT prerequisite_code FROM prerequisites WHERE course_code = ? ORDER BY prerequisite_code",
+        (course_code,),
+    ).fetchall()
+    return [
+        prerequisite_code
+        for (prerequisite_code,) in rows
+    ]
+
+
 def load_courses(connection: sqlite3.Connection) -> list[Course]:
     rows = connection.execute(
         "SELECT code, title, credits, category FROM courses ORDER BY code"
     ).fetchall()
     return [
-        Course(code, title, credits, category)
+        Course(code, title, credits, category, load_prerequisites(connection, code))
         for code, title, credits, category in rows
     ]

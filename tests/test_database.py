@@ -1,6 +1,11 @@
 import sqlite3
 
-from degree_planner.database import initialize_database, load_courses, save_course
+from degree_planner.database import (
+    initialize_database,
+    load_courses,
+    load_prerequisites,
+    save_course,
+)
 from degree_planner.models import Course
 
 
@@ -40,6 +45,15 @@ def test_save_course_inserts_prerequisite_rows():
     assert rows == [("CS 24000", "CS 18000"), ("CS 24000", "CS 18200")]
 
 
+def test_load_prerequisites_returns_codes_for_course():
+    connection = sqlite3.connect(":memory:")
+    initialize_database(connection)
+
+    save_course(connection, Course("CS 24000", "Programming in C", 3, "core", ["CS 18000", "CS 18200"]))
+
+    assert load_prerequisites(connection, "CS 24000") == ["CS 18000", "CS 18200"]
+
+
 def test_load_courses_returns_course_objects():
     connection = sqlite3.connect(":memory:")
     initialize_database(connection)
@@ -50,3 +64,14 @@ def test_load_courses_returns_course_objects():
     courses = load_courses(connection)
 
     assert [course.code for course in courses] == ["CS 18000", "CS 18200"]
+
+
+def test_load_courses_includes_prerequisites():
+    connection = sqlite3.connect(":memory:")
+    initialize_database(connection)
+
+    save_course(connection, Course("CS 18200", "Foundations", 3, "core", ["CS 18000"]))
+
+    courses = load_courses(connection)
+
+    assert courses[0].prerequisites == ["CS 18000"]
