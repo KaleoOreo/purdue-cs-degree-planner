@@ -31,6 +31,11 @@ def save_course(connection: sqlite3.Connection, course: Course) -> None:
         "INSERT INTO courses (code, title, credits, category) VALUES (?, ?, ?, ?)",
         (course.code, course.title, course.credits, course.category),
     )
+    for prerequisite in course.prerequisites:
+        connection.execute(
+            "INSERT INTO prerequisites (course_code, prerequisite_code) VALUES (?, ?)",
+            (course.code, prerequisite),
+        )
     connection.commit()
 
 

@@ -28,6 +28,18 @@ def test_save_course_inserts_course_row():
     assert row == ("CS 18000", "Problem Solving", 4, "core")
 
 
+def test_save_course_inserts_prerequisite_rows():
+    connection = sqlite3.connect(":memory:")
+    initialize_database(connection)
+
+    save_course(connection, Course("CS 24000", "Programming in C", 3, "core", ["CS 18000", "CS 18200"]))
+    rows = connection.execute(
+        "SELECT course_code, prerequisite_code FROM prerequisites ORDER BY prerequisite_code"
+    ).fetchall()
+
+    assert rows == [("CS 24000", "CS 18000"), ("CS 24000", "CS 18200")]
+
+
 def test_load_courses_returns_course_objects():
     connection = sqlite3.connect(":memory:")
     initialize_database(connection)
