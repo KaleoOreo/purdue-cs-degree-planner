@@ -8,11 +8,12 @@ def test_initialize_database_creates_courses_table():
     connection = sqlite3.connect(":memory:")
 
     initialize_database(connection)
-    table = connection.execute(
-        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'courses'"
-    ).fetchone()
+    tables = connection.execute(
+        "SELECT name FROM sqlite_master WHERE type = 'table'"
+    ).fetchall()
 
-    assert table == ("courses",)
+    assert ("courses",) in tables
+    assert ("prerequisites",) in tables
 
 
 def test_save_course_inserts_course_row():

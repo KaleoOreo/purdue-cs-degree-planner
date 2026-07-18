@@ -12,9 +12,17 @@ CREATE TABLE IF NOT EXISTS courses (
 );
 """
 
+CREATE_PREREQUISITES_TABLE = """
+CREATE TABLE IF NOT EXISTS prerequisites (
+    course_code TEXT NOT NULL,
+    prerequisite_code TEXT NOT NULL
+);
+"""
+
 
 def initialize_database(connection: sqlite3.Connection) -> None:
     connection.execute(CREATE_COURSES_TABLE)
+    connection.execute(CREATE_PREREQUISITES_TABLE)
     connection.commit()
 
 
