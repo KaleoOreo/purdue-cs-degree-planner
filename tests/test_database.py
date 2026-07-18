@@ -1,6 +1,6 @@
 import sqlite3
 
-from degree_planner.database import initialize_database, save_course
+from degree_planner.database import initialize_database, load_courses, save_course
 from degree_planner.models import Course
 
 
@@ -25,3 +25,15 @@ def test_save_course_inserts_course_row():
     ).fetchone()
 
     assert row == ("CS 18000", "Problem Solving", 4, "core")
+
+
+def test_load_courses_returns_course_objects():
+    connection = sqlite3.connect(":memory:")
+    initialize_database(connection)
+
+    save_course(connection, Course("CS 18200", "Foundations", 3, "core"))
+    save_course(connection, Course("CS 18000", "Problem Solving", 4, "core"))
+
+    courses = load_courses(connection)
+
+    assert [course.code for course in courses] == ["CS 18000", "CS 18200"]

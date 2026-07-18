@@ -24,3 +24,13 @@ def save_course(connection: sqlite3.Connection, course: Course) -> None:
         (course.code, course.title, course.credits, course.category),
     )
     connection.commit()
+
+
+def load_courses(connection: sqlite3.Connection) -> list[Course]:
+    rows = connection.execute(
+        "SELECT code, title, credits, category FROM courses ORDER BY code"
+    ).fetchall()
+    return [
+        Course(code, title, credits, category)
+        for code, title, credits, category in rows
+    ]
