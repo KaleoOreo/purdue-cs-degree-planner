@@ -2,6 +2,7 @@ import sqlite3
 
 from degree_planner.database import (
     initialize_database,
+    load_completed_courses,
     load_courses,
     load_prerequisites,
     mark_completed,
@@ -89,3 +90,13 @@ def test_mark_completed_inserts_completed_course():
     ).fetchone()
 
     assert row == ("CS 18000",)
+
+
+def test_load_completed_courses_returns_completed_codes():
+    connection = sqlite3.connect(":memory:")
+    initialize_database(connection)
+
+    mark_completed(connection, "CS 18000")
+    mark_completed(connection, "CS 18200")
+
+    assert load_completed_courses(connection) == {"CS 18000", "CS 18200"}

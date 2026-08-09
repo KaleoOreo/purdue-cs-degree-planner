@@ -73,3 +73,13 @@ def mark_completed(connection: sqlite3.Connection, course_code: str) -> None:
         (course_code,),
     )
     connection.commit()
+
+
+def load_completed_courses(connection: sqlite3.Connection) -> set[str]:
+    rows = connection.execute(
+        "SELECT course_code FROM completed_courses"
+    ).fetchall()
+    return {
+        course_code
+        for (course_code,) in rows
+    }
