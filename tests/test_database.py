@@ -112,3 +112,13 @@ def test_load_completed_courses_returns_completed_codes():
     mark_completed(connection, "CS 18200")
 
     assert load_completed_courses(connection) == {"CS 18000", "CS 18200"}
+
+
+def test_mark_completed_ignores_duplicate_course_code():
+    connection = sqlite3.connect(":memory:")
+    initialize_database(connection)
+
+    mark_completed(connection, "CS 18000")
+    mark_completed(connection, "CS 18000")
+
+    assert load_completed_courses(connection) == {"CS 18000"}

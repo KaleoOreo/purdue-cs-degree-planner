@@ -75,7 +75,7 @@ def load_courses(connection: sqlite3.Connection) -> list[Course]:
 
 def mark_completed(connection: sqlite3.Connection, course_code: str) -> None:
     connection.execute(
-        "INSERT INTO completed_courses (course_code) VALUES (?)",
+        "INSERT OR IGNORE INTO completed_courses (course_code) VALUES (?)",
         (course_code,),
     )
     connection.commit()
