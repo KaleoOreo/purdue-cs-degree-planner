@@ -19,10 +19,17 @@ CREATE TABLE IF NOT EXISTS prerequisites (
 );
 """
 
+CREATE_COMPLETED_COURSES_TABLE = """
+CREATE TABLE IF NOT EXISTS completed_courses (
+    course_code TEXT PRIMARY KEY
+);
+"""
+
 
 def initialize_database(connection: sqlite3.Connection) -> None:
     connection.execute(CREATE_COURSES_TABLE)
     connection.execute(CREATE_PREREQUISITES_TABLE)
+    connection.execute(CREATE_COMPLETED_COURSES_TABLE)
     connection.commit()
 
 

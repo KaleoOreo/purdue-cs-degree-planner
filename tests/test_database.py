@@ -19,6 +19,7 @@ def test_initialize_database_creates_courses_table():
 
     assert ("courses",) in tables
     assert ("prerequisites",) in tables
+    assert ("completed_courses",) in tables
 
 
 def test_save_course_inserts_course_row():
