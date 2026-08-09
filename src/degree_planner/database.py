@@ -65,3 +65,11 @@ def load_courses(connection: sqlite3.Connection) -> list[Course]:
         Course(code, title, credits, category, load_prerequisites(connection, code))
         for code, title, credits, category in rows
     ]
+
+
+def mark_completed(connection: sqlite3.Connection, course_code: str) -> None:
+    connection.execute(
+        "INSERT INTO completed_courses (course_code) VALUES (?)",
+        (course_code,),
+    )
+    connection.commit()

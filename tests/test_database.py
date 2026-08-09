@@ -4,6 +4,7 @@ from degree_planner.database import (
     initialize_database,
     load_courses,
     load_prerequisites,
+    mark_completed,
     save_course,
 )
 from degree_planner.models import Course
@@ -76,3 +77,15 @@ def test_load_courses_includes_prerequisites():
     courses = load_courses(connection)
 
     assert courses[0].prerequisites == ["CS 18000"]
+
+
+def test_mark_completed_inserts_completed_course():
+    connection = sqlite3.connect(":memory:")
+    initialize_database(connection)
+
+    mark_completed(connection, "CS 18000")
+    row = connection.execute(
+        "SELECT course_code FROM completed_courses"
+    ).fetchone()
+
+    assert row == ("CS 18000",)
