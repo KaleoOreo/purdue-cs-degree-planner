@@ -33,6 +33,12 @@ def initialize_database(connection: sqlite3.Connection) -> None:
     connection.commit()
 
 
+def connect_database(path: str) -> sqlite3.Connection:
+    connection = sqlite3.connect(path)
+    initialize_database(connection)
+    return connection
+
+
 def save_course(connection: sqlite3.Connection, course: Course) -> None:
     connection.execute(
         "INSERT INTO courses (code, title, credits, category) VALUES (?, ?, ?, ?)",

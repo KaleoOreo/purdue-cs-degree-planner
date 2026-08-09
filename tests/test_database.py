@@ -1,6 +1,7 @@
 import sqlite3
 
 from degree_planner.database import (
+    connect_database,
     initialize_database,
     load_completed_courses,
     load_courses,
@@ -22,6 +23,17 @@ def test_initialize_database_creates_courses_table():
     assert ("courses",) in tables
     assert ("prerequisites",) in tables
     assert ("completed_courses",) in tables
+
+
+def test_connect_database_initializes_database_file():
+    database_path = "data/test_planner.db"
+
+    connection = connect_database(str(database_path))
+    tables = connection.execute(
+        "SELECT name FROM sqlite_master WHERE type = 'table'"
+    ).fetchall()
+
+    assert ("courses",) in tables
 
 
 def test_save_course_inserts_course_row():
