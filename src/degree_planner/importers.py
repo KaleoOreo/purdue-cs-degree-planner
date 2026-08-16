@@ -6,7 +6,7 @@ from degree_planner.models import Course
 
 
 def parse_prerequisites(value: str) -> list[str]:
-    if not value:
+    if not value.strip():
         return []
 
     return [
