@@ -1,3 +1,5 @@
+import csv
+
 from degree_planner.models import Course
 
 
@@ -19,3 +21,12 @@ def course_from_row(row: dict[str, str]) -> Course:
         row["category"],
         parse_prerequisites(row["prerequisites"]),
     )
+
+
+def load_courses_from_csv(path: str) -> list[Course]:
+    with open(path, newline="") as file:
+        reader = csv.DictReader(file)
+        return [
+            course_from_row(row)
+            for row in reader
+        ]

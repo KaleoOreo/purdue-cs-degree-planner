@@ -1,4 +1,8 @@
-from degree_planner.importers import course_from_row, parse_prerequisites
+from degree_planner.importers import (
+    course_from_row,
+    load_courses_from_csv,
+    parse_prerequisites,
+)
 
 
 def test_parse_prerequisites_splits_semicolon_values():
@@ -23,3 +27,10 @@ def test_course_from_row_converts_csv_row_to_course():
     assert course.code == "CS 24000"
     assert course.credits == 3
     assert course.prerequisites == ["CS 18000", "CS 18200"]
+
+
+def test_load_courses_from_csv_returns_courses():
+    courses = load_courses_from_csv("tests/fixtures/courses.csv")
+
+    assert [course.code for course in courses] == ["CS 18000", "CS 18200"]
+    assert courses[1].prerequisites == ["CS 18000"]
