@@ -21,6 +21,10 @@ def test_parse_prerequisites_returns_empty_list_for_spaces():
     assert parse_prerequisites("   ") == []
 
 
+def test_parse_prerequisites_ignores_blank_parts():
+    assert parse_prerequisites("CS 18000; ") == ["CS 18000"]
+
+
 def test_course_from_row_converts_csv_row_to_course():
     row = {
         "code": "CS 24000",

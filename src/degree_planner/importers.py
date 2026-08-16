@@ -12,6 +12,7 @@ def parse_prerequisites(value: str) -> list[str]:
     return [
         prerequisite.strip()
         for prerequisite in value.split(";")
+        if prerequisite.strip()
     ]
 
 
