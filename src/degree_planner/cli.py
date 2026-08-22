@@ -1,5 +1,9 @@
 import argparse
 
+from degree_planner.database import connect_database
+from degree_planner.reports import course_codes
+from degree_planner.services import plan_next_semester_from_database
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="degree-planner")
@@ -20,3 +24,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> argparse.Namespace:
     parser = build_parser()
     return parser.parse_args(argv)
+
+
+def run_plan_command(args: argparse.Namespace) -> list[str]:
+    connection = connect_database(args.database)
+    plan = plan_next_semester_from_database(connection, args.max_credits)
+    return course_codes(plan)
