@@ -7,6 +7,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--database",
         default="data/planner.db",
     )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers.add_parser("plan")
     return parser
 
 
