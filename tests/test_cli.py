@@ -12,3 +12,9 @@ def test_main_accepts_database_argument():
     args = main(["--database", "data/test.db", "plan"])
 
     assert args.database == "data/test.db"
+
+
+def test_plan_command_accepts_max_credits():
+    args = main(["plan", "--max-credits", "12"])
+
+    assert args.max_credits == 12
