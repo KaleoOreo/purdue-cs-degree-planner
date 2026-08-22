@@ -21,12 +21,20 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> argparse.Namespace:
+def main(argv: list[str] | None = None) -> list[str]:
     parser = build_parser()
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+
+    if args.command == "plan":
+        return run_plan_command(args)
+
+    raise ValueError(f"unknown command: {args.command}")
 
 
 def run_plan_command(args: argparse.Namespace) -> list[str]:
     connection = connect_database(args.database)
-    plan = plan_next_semester_from_database(connection, args.max_credits)
-    return course_codes(plan)
+    try:
+        plan = plan_next_semester_from_database(connection, args.max_credits)
+        return course_codes(plan)
+    finally:
+        connection.close()
