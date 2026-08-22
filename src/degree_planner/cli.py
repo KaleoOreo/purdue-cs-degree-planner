@@ -38,3 +38,8 @@ def run_plan_command(args: argparse.Namespace) -> list[str]:
         return course_codes(plan)
     finally:
         connection.close()
+
+
+if __name__ == "__main__":
+    for code in main():
+        print(code)
