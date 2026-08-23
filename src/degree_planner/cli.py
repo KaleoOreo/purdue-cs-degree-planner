@@ -40,6 +40,10 @@ def run_plan_command(args: argparse.Namespace) -> list[str]:
         connection.close()
 
 
-if __name__ == "__main__":
+def cli_entry() -> None:
     for code in main():
         print(code)
+
+
+if __name__ == "__main__":
+    cli_entry()
