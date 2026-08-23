@@ -18,6 +18,8 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=15,
     )
+    import_parser = subparsers.add_parser("import")
+    import_parser.add_argument("csv_path")
     return parser
 
 

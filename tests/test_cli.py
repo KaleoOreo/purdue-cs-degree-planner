@@ -29,6 +29,13 @@ def test_plan_command_accepts_max_credits():
     assert args.max_credits == 12
 
 
+def test_import_command_accepts_csv_path():
+    parser = build_parser()
+    args = parser.parse_args(["import", "tests/fixtures/courses.csv"])
+
+    assert args.csv_path == "tests/fixtures/courses.csv"
+
+
 def test_run_plan_command_returns_course_codes():
     Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
     connection = connect_database(TEST_CLI_DATABASE)
