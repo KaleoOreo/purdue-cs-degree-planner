@@ -2,7 +2,7 @@ from argparse import Namespace
 from pathlib import Path
 
 from degree_planner.cli import build_parser, main, run_plan_command
-from degree_planner.database import connect_database, mark_completed, save_course
+from degree_planner.database import connect_database, load_courses, mark_completed, save_course
 from degree_planner.models import Course
 
 TEST_CLI_DATABASE = "data/test_cli.db"
@@ -58,3 +58,19 @@ def test_main_runs_plan_command():
     result = main(["--database", TEST_CLI_DATABASE, "plan"])
 
     assert result == ["CS 18000"]
+
+
+def test_main_runs_import_command():
+    Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
+
+    result = main([
+        "--database", TEST_CLI_DATABASE,
+        "import", "tests/fixtures/courses.csv",
+    ])
+
+    connection = connect_database(TEST_CLI_DATABASE)
+    courses = load_courses(connection)
+    connection.close()
+
+    assert result == []
+    assert [course.code for course in courses] == ["CS 18000", "CS 18200"]
