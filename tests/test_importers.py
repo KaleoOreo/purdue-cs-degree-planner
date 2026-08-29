@@ -1,5 +1,7 @@
 import sqlite3
 
+import pytest
+
 from degree_planner.database import initialize_database, load_courses
 from degree_planner.importers import (
     course_from_row,
@@ -58,3 +60,13 @@ def test_import_courses_from_csv_saves_courses_to_database():
     assert imported_count == 2
     assert [course.code for course in courses] == ["CS 18000", "CS 18200"]
     assert courses[1].prerequisites == ["CS 18000"]
+
+
+def test_import_courses_from_csv_rejects_duplicate_course_codes():
+    connection = sqlite3.connect(":memory:")
+    initialize_database(connection)
+
+    import_courses_from_csv(connection, "tests/fixtures/courses.csv")
+
+    with pytest.raises(sqlite3.IntegrityError):
+        import_courses_from_csv(connection, "tests/fixtures/courses.csv")
