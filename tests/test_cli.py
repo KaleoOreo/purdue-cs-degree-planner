@@ -56,6 +56,16 @@ def test_run_plan_command_returns_course_codes():
     assert result == ["CS 18200"]
 
 
+def test_run_plan_command_reports_when_no_courses_are_available():
+    Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
+    connection = connect_database(TEST_CLI_DATABASE)
+    connection.close()
+
+    result = run_plan_command(Namespace(database=TEST_CLI_DATABASE, max_credits=15))
+
+    assert result == ["No available courses"]
+
+
 def test_main_runs_plan_command():
     Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
     connection = connect_database(TEST_CLI_DATABASE)

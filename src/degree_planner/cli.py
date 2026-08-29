@@ -46,6 +46,8 @@ def run_plan_command(args: argparse.Namespace) -> list[str]:
     connection = connect_database(args.database)
     try:
         plan = plan_next_semester_from_database(connection, args.max_credits)
+        if not plan:
+            return ["No available courses"]
         return course_codes(plan)
     finally:
         connection.close()
