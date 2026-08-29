@@ -1,6 +1,11 @@
 import argparse
 
-from degree_planner.database import connect_database, load_courses, mark_completed
+from degree_planner.database import (
+    connect_database,
+    load_completed_courses,
+    load_courses,
+    mark_completed,
+)
 from degree_planner.importers import import_courses_from_csv
 from degree_planner.reports import course_codes
 from degree_planner.services import plan_next_semester_from_database
@@ -44,6 +49,9 @@ def main(argv: list[str] | None = None) -> list[str]:
     if args.command == "courses":
         return run_courses_command(args)
 
+    if args.command == "completed":
+        return run_completed_command(args)
+
     raise ValueError(f"unknown command: {args.command}")
 
 
@@ -80,6 +88,14 @@ def run_courses_command(args: argparse.Namespace) -> list[str]:
     connection = connect_database(args.database)
     try:
         return course_codes(load_courses(connection))
+    finally:
+        connection.close()
+
+
+def run_completed_command(args: argparse.Namespace) -> list[str]:
+    connection = connect_database(args.database)
+    try:
+        return sorted(load_completed_courses(connection))
     finally:
         connection.close()
 

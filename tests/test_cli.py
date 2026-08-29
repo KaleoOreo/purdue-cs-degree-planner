@@ -130,3 +130,12 @@ def test_main_runs_courses_command():
     result = main(["--database", TEST_CLI_DATABASE, "courses"])
 
     assert result == ["CS 18000", "CS 18200"]
+
+
+def test_main_runs_completed_command():
+    Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
+    main(["--database", TEST_CLI_DATABASE, "complete", "CS 18000"])
+
+    result = main(["--database", TEST_CLI_DATABASE, "completed"])
+
+    assert result == ["CS 18000"]
