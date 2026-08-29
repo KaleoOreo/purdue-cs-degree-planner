@@ -1,7 +1,7 @@
 from argparse import Namespace
 from pathlib import Path
 
-from degree_planner.cli import build_parser, main, run_plan_command
+from degree_planner.cli import build_parser, course_word, main, run_plan_command
 from degree_planner.database import connect_database, load_courses, mark_completed, save_course
 from degree_planner.models import Course
 
@@ -41,6 +41,11 @@ def test_complete_command_accepts_course_code():
     args = parser.parse_args(["complete", "CS 18000"])
 
     assert args.course_code == "CS 18000"
+
+
+def test_course_word_matches_count():
+    assert course_word(1) == "course"
+    assert course_word(2) == "courses"
 
 
 def test_run_plan_command_returns_course_codes():

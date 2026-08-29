@@ -57,7 +57,7 @@ def run_import_command(args: argparse.Namespace) -> list[str]:
     connection = connect_database(args.database)
     try:
         imported_count = import_courses_from_csv(connection, args.csv_path)
-        return [f"Imported {imported_count} courses"]
+        return [f"Imported {imported_count} {course_word(imported_count)}"]
     finally:
         connection.close()
 
@@ -69,6 +69,12 @@ def run_complete_command(args: argparse.Namespace) -> list[str]:
         return [f"Completed {args.course_code}"]
     finally:
         connection.close()
+
+
+def course_word(count: int) -> str:
+    if count == 1:
+        return "course"
+    return "courses"
 
 
 def cli_entry() -> None:
