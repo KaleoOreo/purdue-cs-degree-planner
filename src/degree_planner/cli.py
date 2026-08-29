@@ -24,6 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
     complete_parser = subparsers.add_parser("complete")
     complete_parser.add_argument("course_code")
     subparsers.add_parser("courses")
+    subparsers.add_parser("completed")
     return parser
 
 

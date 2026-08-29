@@ -50,6 +50,13 @@ def test_courses_command_is_valid():
     assert args.command == "courses"
 
 
+def test_completed_command_is_valid():
+    parser = build_parser()
+    args = parser.parse_args(["completed"])
+
+    assert args.command == "completed"
+
+
 def test_course_word_matches_count():
     assert course_word(1) == "course"
     assert course_word(2) == "courses"
