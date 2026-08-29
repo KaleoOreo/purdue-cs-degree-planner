@@ -21,6 +21,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     import_parser = subparsers.add_parser("import")
     import_parser.add_argument("csv_path")
+    complete_parser = subparsers.add_parser("complete")
+    complete_parser.add_argument("course_code")
     return parser
 
 

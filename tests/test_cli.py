@@ -36,6 +36,13 @@ def test_import_command_accepts_csv_path():
     assert args.csv_path == "tests/fixtures/courses.csv"
 
 
+def test_complete_command_accepts_course_code():
+    parser = build_parser()
+    args = parser.parse_args(["complete", "CS 18000"])
+
+    assert args.course_code == "CS 18000"
+
+
 def test_run_plan_command_returns_course_codes():
     Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
     connection = connect_database(TEST_CLI_DATABASE)
