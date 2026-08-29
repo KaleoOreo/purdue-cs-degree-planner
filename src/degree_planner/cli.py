@@ -55,7 +55,7 @@ def run_import_command(args: argparse.Namespace) -> list[str]:
     connection = connect_database(args.database)
     try:
         import_courses_from_csv(connection, args.csv_path)
-        return []
+        return ["Imported courses"]
     finally:
         connection.close()
 
@@ -64,7 +64,7 @@ def run_complete_command(args: argparse.Namespace) -> list[str]:
     connection = connect_database(args.database)
     try:
         mark_completed(connection, args.course_code)
-        return []
+        return [f"Completed {args.course_code}"]
     finally:
         connection.close()
 

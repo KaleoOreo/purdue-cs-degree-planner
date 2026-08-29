@@ -79,7 +79,7 @@ def test_main_runs_import_command():
     courses = load_courses(connection)
     connection.close()
 
-    assert result == []
+    assert result == ["Imported courses"]
     assert [course.code for course in courses] == ["CS 18000", "CS 18200"]
 
 
@@ -90,5 +90,5 @@ def test_main_runs_complete_command():
     result = main(["--database", TEST_CLI_DATABASE, "complete", "CS 18000"])
     plan = main(["--database", TEST_CLI_DATABASE, "plan"])
 
-    assert result == []
+    assert result == ["Completed CS 18000"]
     assert plan == ["CS 18200"]
