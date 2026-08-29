@@ -1,6 +1,6 @@
 import argparse
 
-from degree_planner.database import connect_database
+from degree_planner.database import connect_database, mark_completed
 from degree_planner.importers import import_courses_from_csv
 from degree_planner.reports import course_codes
 from degree_planner.services import plan_next_semester_from_database
@@ -52,6 +52,15 @@ def run_import_command(args: argparse.Namespace) -> list[str]:
     connection = connect_database(args.database)
     try:
         import_courses_from_csv(connection, args.csv_path)
+        return []
+    finally:
+        connection.close()
+
+
+def run_complete_command(args: argparse.Namespace) -> list[str]:
+    connection = connect_database(args.database)
+    try:
+        mark_completed(connection, args.course_code)
         return []
     finally:
         connection.close()
