@@ -6,6 +6,7 @@ from degree_planner.database import (
     load_courses,
     mark_completed,
 )
+from degree_planner.exceptions import DuplicateCourseError
 from degree_planner.importers import import_courses_from_csv
 from degree_planner.reports import course_codes
 from degree_planner.services import plan_next_semester_from_database
@@ -37,20 +38,23 @@ def main(argv: list[str] | None = None) -> list[str]:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if args.command == "plan":
-        return run_plan_command(args)
+    try:
+        if args.command == "plan":
+            return run_plan_command(args)
 
-    if args.command == "import":
-        return run_import_command(args)
+        if args.command == "import":
+            return run_import_command(args)
 
-    if args.command == "complete":
-        return run_complete_command(args)
+        if args.command == "complete":
+            return run_complete_command(args)
 
-    if args.command == "courses":
-        return run_courses_command(args)
+        if args.command == "courses":
+            return run_courses_command(args)
 
-    if args.command == "completed":
-        return run_completed_command(args)
+        if args.command == "completed":
+            return run_completed_command(args)
+    except DuplicateCourseError as error:
+        return [f"Error: {error}"]
 
     raise ValueError(f"unknown command: {args.command}")
 

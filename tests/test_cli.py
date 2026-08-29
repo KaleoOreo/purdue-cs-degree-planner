@@ -112,6 +112,15 @@ def test_main_runs_import_command():
     assert [course.code for course in courses] == ["CS 18000", "CS 18200"]
 
 
+def test_main_reports_duplicate_import_error():
+    Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
+    main(["--database", TEST_CLI_DATABASE, "import", "tests/fixtures/courses.csv"])
+
+    result = main(["--database", TEST_CLI_DATABASE, "import", "tests/fixtures/courses.csv"])
+
+    assert result == ["Error: duplicate course code during import"]
+
+
 def test_main_runs_complete_command():
     Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
     main(["--database", TEST_CLI_DATABASE, "import", "tests/fixtures/courses.csv"])
