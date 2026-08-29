@@ -56,8 +56,8 @@ def run_plan_command(args: argparse.Namespace) -> list[str]:
 def run_import_command(args: argparse.Namespace) -> list[str]:
     connection = connect_database(args.database)
     try:
-        import_courses_from_csv(connection, args.csv_path)
-        return ["Imported courses"]
+        imported_count = import_courses_from_csv(connection, args.csv_path)
+        return [f"Imported {imported_count} courses"]
     finally:
         connection.close()
 

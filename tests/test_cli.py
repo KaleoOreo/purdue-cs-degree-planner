@@ -89,7 +89,7 @@ def test_main_runs_import_command():
     courses = load_courses(connection)
     connection.close()
 
-    assert result == ["Imported courses"]
+    assert result == ["Imported 2 courses"]
     assert [course.code for course in courses] == ["CS 18000", "CS 18200"]
 
 

@@ -52,8 +52,9 @@ def test_import_courses_from_csv_saves_courses_to_database():
     connection = sqlite3.connect(":memory:")
     initialize_database(connection)
 
-    import_courses_from_csv(connection, "tests/fixtures/courses.csv")
+    imported_count = import_courses_from_csv(connection, "tests/fixtures/courses.csv")
     courses = load_courses(connection)
 
+    assert imported_count == 2
     assert [course.code for course in courses] == ["CS 18000", "CS 18200"]
     assert courses[1].prerequisites == ["CS 18000"]

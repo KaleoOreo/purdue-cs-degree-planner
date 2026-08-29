@@ -35,7 +35,8 @@ def load_courses_from_csv(path: str) -> list[Course]:
         ]
 
 
-def import_courses_from_csv(connection: sqlite3.Connection, path: str) -> None:
+def import_courses_from_csv(connection: sqlite3.Connection, path: str) -> int:
     courses = load_courses_from_csv(path)
     for course in courses:
         save_course(connection, course)
+    return len(courses)
