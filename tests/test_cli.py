@@ -43,6 +43,13 @@ def test_complete_command_accepts_course_code():
     assert args.course_code == "CS 18000"
 
 
+def test_courses_command_is_valid():
+    parser = build_parser()
+    args = parser.parse_args(["courses"])
+
+    assert args.command == "courses"
+
+
 def test_course_word_matches_count():
     assert course_word(1) == "course"
     assert course_word(2) == "courses"
