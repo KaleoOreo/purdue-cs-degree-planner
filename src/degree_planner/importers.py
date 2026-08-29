@@ -2,6 +2,7 @@ import csv
 import sqlite3
 
 from degree_planner.database import save_course
+from degree_planner.exceptions import DuplicateCourseError
 from degree_planner.models import Course
 
 
@@ -38,5 +39,8 @@ def load_courses_from_csv(path: str) -> list[Course]:
 def import_courses_from_csv(connection: sqlite3.Connection, path: str) -> int:
     courses = load_courses_from_csv(path)
     for course in courses:
-        save_course(connection, course)
+        try:
+            save_course(connection, course)
+        except sqlite3.IntegrityError as error:
+            raise DuplicateCourseError("duplicate course code during import") from error
     return len(courses)

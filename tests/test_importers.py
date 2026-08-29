@@ -3,6 +3,7 @@ import sqlite3
 import pytest
 
 from degree_planner.database import initialize_database, load_courses
+from degree_planner.exceptions import DuplicateCourseError
 from degree_planner.importers import (
     course_from_row,
     import_courses_from_csv,
@@ -68,5 +69,5 @@ def test_import_courses_from_csv_rejects_duplicate_course_codes():
 
     import_courses_from_csv(connection, "tests/fixtures/courses.csv")
 
-    with pytest.raises(sqlite3.IntegrityError):
+    with pytest.raises(DuplicateCourseError):
         import_courses_from_csv(connection, "tests/fixtures/courses.csv")
