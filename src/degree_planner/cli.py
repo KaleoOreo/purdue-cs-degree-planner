@@ -36,6 +36,9 @@ def main(argv: list[str] | None = None) -> list[str]:
     if args.command == "import":
         return run_import_command(args)
 
+    if args.command == "complete":
+        return run_complete_command(args)
+
     raise ValueError(f"unknown command: {args.command}")
 
 
