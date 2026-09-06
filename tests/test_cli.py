@@ -141,6 +141,14 @@ def test_main_runs_courses_command():
     assert result == ["CS 18000", "CS 18200"]
 
 
+def test_main_reports_when_no_courses_exist():
+    Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
+
+    result = main(["--database", TEST_CLI_DATABASE, "courses"])
+
+    assert result == ["No courses found"]
+
+
 def test_main_runs_completed_command():
     Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
     main(["--database", TEST_CLI_DATABASE, "complete", "CS 18000"])

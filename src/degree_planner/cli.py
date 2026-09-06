@@ -91,7 +91,10 @@ def run_complete_command(args: argparse.Namespace) -> list[str]:
 def run_courses_command(args: argparse.Namespace) -> list[str]:
     connection = connect_database(args.database)
     try:
-        return course_codes(load_courses(connection))
+        courses = load_courses(connection)
+        if not courses:
+            return ["No courses found"]
+        return course_codes(courses)
     finally:
         connection.close()
 
