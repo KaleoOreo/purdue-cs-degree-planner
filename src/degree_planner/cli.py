@@ -102,7 +102,10 @@ def run_courses_command(args: argparse.Namespace) -> list[str]:
 def run_completed_command(args: argparse.Namespace) -> list[str]:
     connection = connect_database(args.database)
     try:
-        return sorted(load_completed_courses(connection))
+        completed = load_completed_courses(connection)
+        if not completed:
+            return ["No completed courses"]
+        return sorted(completed)
     finally:
         connection.close()
 

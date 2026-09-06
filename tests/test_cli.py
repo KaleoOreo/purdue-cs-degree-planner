@@ -156,3 +156,11 @@ def test_main_runs_completed_command():
     result = main(["--database", TEST_CLI_DATABASE, "completed"])
 
     assert result == ["CS 18000"]
+
+
+def test_main_reports_when_no_completed_courses_exist():
+    Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
+
+    result = main(["--database", TEST_CLI_DATABASE, "completed"])
+
+    assert result == ["No completed courses"]
