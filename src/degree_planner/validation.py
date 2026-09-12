@@ -32,12 +32,4 @@ def find_two_course_cycles(courses: list[Course]) -> list[tuple[str, str]]:
 
 
 def has_cycle(courses: list[Course]) -> bool:
-    course_by_code = {course.code: course for course in courses}
-
-    for course in courses:
-        for prerequisite in course.prerequisites:
-            prerequisite_course = course_by_code.get(prerequisite)
-            if prerequisite_course and course.code in prerequisite_course.prerequisites:
-                return True
-
-    return False
+    return bool(find_two_course_cycles(courses))
