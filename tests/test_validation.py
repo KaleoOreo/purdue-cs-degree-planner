@@ -25,3 +25,15 @@ def test_find_missing_prerequisites_does_not_repeat_same_pair():
     ]
 
     assert find_missing_prerequisites(courses) == [("CS 24000", "CS 99999")]
+
+
+def test_find_missing_prerequisites_keeps_same_missing_code_for_different_courses():
+    courses = [
+        Course("CS 18200", "Foundations", 3, "core", ["CS 99999"]),
+        Course("CS 24000", "Programming in C", 3, "core", ["CS 99999"]),
+    ]
+
+    assert find_missing_prerequisites(courses) == [
+        ("CS 18200", "CS 99999"),
+        ("CS 24000", "CS 99999"),
+    ]
