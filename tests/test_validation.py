@@ -1,5 +1,9 @@
 from degree_planner.models import Course
-from degree_planner.validation import find_missing_prerequisites, has_cycle
+from degree_planner.validation import (
+    find_missing_prerequisites,
+    find_two_course_cycles,
+    has_cycle,
+)
 
 
 def test_find_missing_prerequisites_returns_unknown_prerequisite_codes():
@@ -46,3 +50,12 @@ def test_has_cycle_returns_true_for_two_course_cycle():
     ]
 
     assert has_cycle(courses) is True
+
+
+def test_find_two_course_cycles_returns_cycle_pair():
+    courses = [
+        Course("CS 18000", "Problem Solving", 4, "core", ["CS 18200"]),
+        Course("CS 18200", "Foundations", 3, "core", ["CS 18000"]),
+    ]
+
+    assert find_two_course_cycles(courses) == [("CS 18000", "CS 18200")]
