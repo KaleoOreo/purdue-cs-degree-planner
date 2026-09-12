@@ -8,6 +8,8 @@ def find_missing_prerequisites(courses: list[Course]) -> list[tuple[str, str]]:
     for course in courses:
         for prerequisite in course.prerequisites:
             if prerequisite not in course_codes:
-                missing.append((course.code, prerequisite))
+                missing_pair = (course.code, prerequisite)
+                if missing_pair not in missing:
+                    missing.append(missing_pair)
 
     return missing

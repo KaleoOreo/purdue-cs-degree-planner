@@ -17,3 +17,11 @@ def test_find_missing_prerequisites_returns_empty_list_when_all_exist():
     ]
 
     assert find_missing_prerequisites(courses) == []
+
+
+def test_find_missing_prerequisites_does_not_repeat_same_pair():
+    courses = [
+        Course("CS 24000", "Programming in C", 3, "core", ["CS 99999", "CS 99999"]),
+    ]
+
+    assert find_missing_prerequisites(courses) == [("CS 24000", "CS 99999")]
