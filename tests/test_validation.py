@@ -59,3 +59,13 @@ def test_find_two_course_cycles_returns_cycle_pair():
     ]
 
     assert find_two_course_cycles(courses) == [("CS 18000", "CS 18200")]
+
+
+def test_has_cycle_returns_true_for_three_course_cycle():
+    courses = [
+        Course("CS 18000", "Problem Solving", 4, "core", ["CS 24000"]),
+        Course("CS 24000", "Programming in C", 3, "core", ["CS 25100"]),
+        Course("CS 25100", "Data Structures", 3, "core", ["CS 18000"]),
+    ]
+
+    assert has_cycle(courses) is True
