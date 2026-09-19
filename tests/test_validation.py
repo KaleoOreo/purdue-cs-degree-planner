@@ -69,3 +69,16 @@ def test_has_cycle_returns_true_for_three_course_cycle():
     ]
 
     assert has_cycle(courses) is True
+
+
+def test_has_cycle_returns_false_for_branching_safe_graph():
+    courses = [
+        Course("CS 10000", "Starting Course", 3, "core"),
+        Course("MATH 10000", "Starting Math", 3, "core"),
+        Course("CS 20000", "Middle Course", 3, "core",
+               ["CS 10000", "MATH 10000"]),
+        Course("CS 30000", "Advanced Course", 3, "core",
+               ["CS 20000", "CS 10000"]),
+    ]
+
+    assert has_cycle(courses) is False
