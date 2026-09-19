@@ -94,3 +94,11 @@ def test_has_cycle_returns_true_when_one_branch_contains_cycle():
     ]
 
     assert has_cycle(courses) is True
+
+
+def test_has_cycle_returns_true_for_self_prerequisite():
+    courses = [
+        Course("CS 18000", "Problem Solving", 4, "core", ["CS 18000"]),
+    ]
+
+    assert has_cycle(courses) is True
