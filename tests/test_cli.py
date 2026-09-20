@@ -210,3 +210,11 @@ def test_run_validate_command_reports_grouped_problems():
         "Cycle detected:",
         "- CS 24000 -> CS 25100 -> CS 24000",
     ]
+
+
+def test_main_runs_validate_command():
+    Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
+
+    result = main(["--database", TEST_CLI_DATABASE, "validate"])
+
+    assert result == ["Course graph is valid"]

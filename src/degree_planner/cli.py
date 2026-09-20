@@ -55,6 +55,9 @@ def main(argv: list[str] | None = None) -> list[str]:
 
         if args.command == "completed":
             return run_completed_command(args)
+
+        if args.command == "validate":
+            return run_validate_command(args)
     except DuplicateCourseError as error:
         return [f"Error: {error}"]
 
