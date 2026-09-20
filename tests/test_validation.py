@@ -115,3 +115,12 @@ def test_find_cycle_path_returns_only_the_closed_cycle():
     ]
 
     assert find_cycle_path(courses) == ["CS 20000", "CS 25000", "CS 20000"]
+
+
+def test_find_cycle_path_returns_empty_list_without_cycle():
+    courses = [
+        Course("CS 18000", "Problem Solving", 4, "core"),
+        Course("CS 18200", "Foundations", 3, "core", ["CS 18000"]),
+    ]
+
+    assert find_cycle_path(courses) == []
