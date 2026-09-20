@@ -1,5 +1,6 @@
 from degree_planner.models import Course
 from degree_planner.validation import (
+    ValidationResult,
     find_cycle_path,
     find_missing_prerequisites,
     find_two_course_cycles,
@@ -124,3 +125,9 @@ def test_find_cycle_path_returns_empty_list_without_cycle():
     ]
 
     assert find_cycle_path(courses) == []
+
+
+def test_validation_result_is_valid_without_problems():
+    result = ValidationResult(missing_prerequisites=[], cycle_path=[])
+
+    assert result.is_valid is True

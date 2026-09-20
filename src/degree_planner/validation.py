@@ -1,4 +1,16 @@
+from dataclasses import dataclass
+
 from degree_planner.models import Course
+
+
+@dataclass
+class ValidationResult:
+    missing_prerequisites: list[tuple[str, str]]
+    cycle_path: list[str]
+
+    @property
+    def is_valid(self) -> bool:
+        return not self.missing_prerequisites and not self.cycle_path
 
 
 def find_missing_prerequisites(courses: list[Course]) -> list[tuple[str, str]]:
