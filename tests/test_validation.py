@@ -1,5 +1,6 @@
 from degree_planner.models import Course
 from degree_planner.validation import (
+    find_cycle_path,
     find_missing_prerequisites,
     find_two_course_cycles,
     has_cycle,
@@ -102,3 +103,15 @@ def test_has_cycle_returns_true_for_self_prerequisite():
     ]
 
     assert has_cycle(courses) is True
+
+
+def test_find_cycle_path_returns_only_the_closed_cycle():
+    courses = [
+        Course("CS 30000", "Branching Course", 3, "core",
+               ["CS 10000", "CS 20000"]),
+        Course("CS 10000", "Safe Course", 3, "core"),
+        Course("CS 20000", "Cycle Part One", 3, "core", ["CS 25000"]),
+        Course("CS 25000", "Cycle Part Two", 3, "core", ["CS 20000"]),
+    ]
+
+    assert find_cycle_path(courses) == ["CS 20000", "CS 25000", "CS 20000"]

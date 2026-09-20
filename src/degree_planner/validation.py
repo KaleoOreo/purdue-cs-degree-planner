@@ -31,6 +31,43 @@ def find_two_course_cycles(courses: list[Course]) -> list[tuple[str, str]]:
     return cycles
 
 
+def find_cycle_path(courses: list[Course]) -> list[str]:
+    course_by_code = {course.code: course for course in courses}
+    visiting: set[str] = set()
+    visited: set[str] = set()
+    path: list[str] = []
+
+    def visit(course_code: str) -> list[str]:
+        if course_code in visiting:
+            cycle_start = path.index(course_code)
+            return path[cycle_start:] + [course_code]
+        if course_code in visited:
+            return []
+
+        visiting.add(course_code)
+        path.append(course_code)
+        course = course_by_code[course_code]
+
+        for prerequisite in course.prerequisites:
+            if prerequisite not in course_by_code:
+                continue
+            cycle = visit(prerequisite)
+            if cycle:
+                return cycle
+
+        path.pop()
+        visiting.remove(course_code)
+        visited.add(course_code)
+        return []
+
+    for course in courses:
+        cycle = visit(course.code)
+        if cycle:
+            return cycle
+
+    return []
+
+
 def has_cycle(courses: list[Course]) -> bool:
     course_by_code = {course.code: course for course in courses}
     visiting: set[str] = set()
