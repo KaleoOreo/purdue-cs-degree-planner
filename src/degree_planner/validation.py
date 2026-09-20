@@ -82,3 +82,10 @@ def find_cycle_path(courses: list[Course]) -> list[str]:
 
 def has_cycle(courses: list[Course]) -> bool:
     return bool(find_cycle_path(courses))
+
+
+def validate_course_graph(courses: list[Course]) -> ValidationResult:
+    return ValidationResult(
+        missing_prerequisites=find_missing_prerequisites(courses),
+        cycle_path=find_cycle_path(courses),
+    )

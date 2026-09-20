@@ -5,6 +5,7 @@ from degree_planner.validation import (
     find_missing_prerequisites,
     find_two_course_cycles,
     has_cycle,
+    validate_course_graph,
 )
 
 
@@ -143,3 +144,16 @@ def test_validation_result_is_invalid_with_cycle():
     result = ValidationResult([], ["CS 18000", "CS 18200", "CS 18000"])
 
     assert result.is_valid is False
+
+
+def test_validate_course_graph_returns_valid_result():
+    courses = [
+        Course("CS 18000", "Problem Solving", 4, "core"),
+        Course("CS 18200", "Foundations", 3, "core", ["CS 18000"]),
+    ]
+
+    result = validate_course_graph(courses)
+
+    assert result.missing_prerequisites == []
+    assert result.cycle_path == []
+    assert result.is_valid is True
