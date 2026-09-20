@@ -119,7 +119,18 @@ def run_validate_command(args: argparse.Namespace) -> list[str]:
         result = validate_course_graph(courses)
         if result.is_valid:
             return ["Course graph is valid"]
-        return ["Course graph is invalid"]
+
+        messages = ["Course graph is invalid"]
+        if result.missing_prerequisites:
+            messages.append("Missing prerequisites:")
+            for course_code, prerequisite_code in result.missing_prerequisites:
+                messages.append(f"- {course_code} requires {prerequisite_code}")
+
+        if result.cycle_path:
+            messages.append("Cycle detected:")
+            messages.append(f"- {' -> '.join(result.cycle_path)}")
+
+        return messages
     finally:
         connection.close()
 

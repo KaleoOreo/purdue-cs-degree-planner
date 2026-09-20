@@ -191,3 +191,22 @@ def test_run_validate_command_reports_valid_graph():
     result = run_validate_command(Namespace(database=TEST_CLI_DATABASE))
 
     assert result == ["Course graph is valid"]
+
+
+def test_run_validate_command_reports_grouped_problems():
+    Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
+    connection = connect_database(TEST_CLI_DATABASE)
+    save_course(connection, Course("CS 18200", "Foundations", 3, "core", ["CS 18000"]))
+    save_course(connection, Course("CS 24000", "Programming in C", 3, "core", ["CS 25100"]))
+    save_course(connection, Course("CS 25100", "Data Structures", 3, "core", ["CS 24000"]))
+    connection.close()
+
+    result = run_validate_command(Namespace(database=TEST_CLI_DATABASE))
+
+    assert result == [
+        "Course graph is invalid",
+        "Missing prerequisites:",
+        "- CS 18200 requires CS 18000",
+        "Cycle detected:",
+        "- CS 24000 -> CS 25100 -> CS 24000",
+    ]
