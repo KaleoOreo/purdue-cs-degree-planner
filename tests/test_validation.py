@@ -131,3 +131,15 @@ def test_validation_result_is_valid_without_problems():
     result = ValidationResult(missing_prerequisites=[], cycle_path=[])
 
     assert result.is_valid is True
+
+
+def test_validation_result_is_invalid_with_missing_prerequisite():
+    result = ValidationResult([("CS 18200", "CS 18000")], [])
+
+    assert result.is_valid is False
+
+
+def test_validation_result_is_invalid_with_cycle():
+    result = ValidationResult([], ["CS 18000", "CS 18200", "CS 18000"])
+
+    assert result.is_valid is False
