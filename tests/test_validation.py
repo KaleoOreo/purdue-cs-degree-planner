@@ -157,3 +157,17 @@ def test_validate_course_graph_returns_valid_result():
     assert result.missing_prerequisites == []
     assert result.cycle_path == []
     assert result.is_valid is True
+
+
+def test_validate_course_graph_returns_all_detected_problems():
+    courses = [
+        Course("CS 18200", "Foundations", 3, "core", ["CS 18000"]),
+        Course("CS 24000", "Programming in C", 3, "core", ["CS 25100"]),
+        Course("CS 25100", "Data Structures", 3, "core", ["CS 24000"]),
+    ]
+
+    result = validate_course_graph(courses)
+
+    assert result.missing_prerequisites == [("CS 18200", "CS 18000")]
+    assert result.cycle_path == ["CS 24000", "CS 25100", "CS 24000"]
+    assert result.is_valid is False
