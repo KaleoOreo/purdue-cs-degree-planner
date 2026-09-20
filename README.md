@@ -7,6 +7,7 @@ completed courses, and semester credit limits.
 
 ```powershell
 degree-planner --database data/planner.db import tests/fixtures/courses.csv
+degree-planner --database data/planner.db validate
 degree-planner --database data/planner.db complete "CS 18000"
 degree-planner --database data/planner.db plan --max-credits 15
 degree-planner --database data/planner.db courses
