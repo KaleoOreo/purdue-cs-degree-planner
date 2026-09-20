@@ -10,6 +10,7 @@ from degree_planner.exceptions import DuplicateCourseError
 from degree_planner.importers import import_courses_from_csv
 from degree_planner.reports import course_codes
 from degree_planner.services import plan_next_semester_from_database
+from degree_planner.validation import validate_course_graph
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -31,6 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
     complete_parser.add_argument("course_code")
     subparsers.add_parser("courses")
     subparsers.add_parser("completed")
+    subparsers.add_parser("validate")
     return parser
 
 
@@ -106,6 +108,18 @@ def run_completed_command(args: argparse.Namespace) -> list[str]:
         if not completed:
             return ["No completed courses"]
         return sorted(completed)
+    finally:
+        connection.close()
+
+
+def run_validate_command(args: argparse.Namespace) -> list[str]:
+    connection = connect_database(args.database)
+    try:
+        courses = load_courses(connection)
+        result = validate_course_graph(courses)
+        if result.is_valid:
+            return ["Course graph is valid"]
+        return ["Course graph is invalid"]
     finally:
         connection.close()
 

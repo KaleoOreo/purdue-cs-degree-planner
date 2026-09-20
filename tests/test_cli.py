@@ -1,7 +1,13 @@
 from argparse import Namespace
 from pathlib import Path
 
-from degree_planner.cli import build_parser, course_word, main, run_plan_command
+from degree_planner.cli import (
+    build_parser,
+    course_word,
+    main,
+    run_plan_command,
+    run_validate_command,
+)
 from degree_planner.database import connect_database, load_courses, mark_completed, save_course
 from degree_planner.models import Course
 
@@ -55,6 +61,13 @@ def test_completed_command_is_valid():
     args = parser.parse_args(["completed"])
 
     assert args.command == "completed"
+
+
+def test_validate_command_is_valid():
+    parser = build_parser()
+    args = parser.parse_args(["validate"])
+
+    assert args.command == "validate"
 
 
 def test_course_word_matches_count():
@@ -164,3 +177,17 @@ def test_main_reports_when_no_completed_courses_exist():
     result = main(["--database", TEST_CLI_DATABASE, "completed"])
 
     assert result == ["No completed courses"]
+
+
+def test_run_validate_command_reports_valid_graph():
+    Path(TEST_CLI_DATABASE).unlink(missing_ok=True)
+    connection = connect_database(TEST_CLI_DATABASE)
+    save_course(connection, Course("CS 18000", "Problem Solving", 4, "core"))
+    save_course(connection, Course(
+        "CS 18200", "Foundations", 3, "core", ["CS 18000"]
+    ))
+    connection.close()
+
+    result = run_validate_command(Namespace(database=TEST_CLI_DATABASE))
+
+    assert result == ["Course graph is valid"]
