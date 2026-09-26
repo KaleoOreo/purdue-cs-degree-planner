@@ -4,6 +4,7 @@ from degree_planner.models import Course
 from degree_planner.planning import (
     build_dependents,
     build_semester_plan,
+    count_unfinished_prerequisites,
     find_available_courses,
     plan_next_semester,
 )
@@ -92,3 +93,13 @@ def test_build_dependents_groups_courses_by_prerequisite():
         "E": [],
         "C": ["A", "E"],
     }
+
+
+def test_count_unfinished_prerequisites_excludes_completed():
+    courses = [
+        Course("A", "Course A", 3, "core", ["B", "C"]),
+        Course("B", "Course B", 3, "core"),
+        Course("C", "Course C", 3, "core"),
+    ]
+    counts = count_unfinished_prerequisites(courses, {"B"})
+    assert counts == {"A": 1, "B": 0, "C": 0}

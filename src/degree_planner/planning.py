@@ -48,3 +48,16 @@ def build_dependents(courses: list[Course]) -> dict[str, list[str]]:
         for prerequisite in course.prerequisites:
             dependents[prerequisite].append(course.code)
     return dependents
+
+
+def count_unfinished_prerequisites(
+    courses: list[Course],
+    completed: set[str],
+) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for course in courses:
+        counts[course.code] = 0
+        for prerequisite in course.prerequisites:
+            if prerequisite not in completed:
+                counts[course.code] += 1
+    return counts
