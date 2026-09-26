@@ -38,3 +38,13 @@ def plan_next_semester(
 ) -> list[Course]:
     available = find_available_courses(courses, completed)
     return build_semester_plan(available, max_credits)
+
+
+def build_dependents(courses: list[Course]) -> dict[str, list[str]]:
+    dependents: dict[str, list[str]] = {}
+    for course in courses:
+        dependents[course.code] = []
+    for course in courses:
+        for prerequisite in course.prerequisites:
+            dependents[prerequisite].append(course.code)
+    return dependents

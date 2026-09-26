@@ -2,6 +2,7 @@ import pytest
 
 from degree_planner.models import Course
 from degree_planner.planning import (
+    build_dependents,
     build_semester_plan,
     find_available_courses,
     plan_next_semester,
@@ -77,3 +78,17 @@ def test_plan_next_semester_filters_then_applies_credit_limit():
     plan = plan_next_semester(courses, {"CS 18000"}, max_credits=3)
 
     assert [course.code for course in plan] == ["CS 18200"]
+
+
+def test_build_dependents_groups_courses_by_prerequisite():
+    courses = [
+        Course("A", "Course A", 3, "core", ["C"]),
+        Course("E", "Course E", 3, "core", ["C"]),
+        Course("C", "Course C", 3, "core"),
+    ]
+    dependents = build_dependents(courses)
+    assert dependents == {
+        "A": [],
+        "E": [],
+        "C": ["A", "E"],
+    }
