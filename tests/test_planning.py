@@ -122,3 +122,15 @@ def test_topological_sort_excludes_completed_courses():
     ]
     order = topological_sort(courses, {"B"})
     assert order == ["A"]
+
+
+def test_topological_sort_respects_branching_prerequisites():
+    courses = [
+        Course("A", "Course A", 3, "core", ["B", "C"]),
+        Course("B", "Course B", 3, "core"),
+        Course("C", "Course C", 3, "core"),
+    ]
+    order = topological_sort(courses, set())
+    assert sorted(order) == ["A", "B", "C"]
+    assert order.index("B") < order.index("A")
+    assert order.index("C") < order.index("A")
