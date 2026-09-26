@@ -1,4 +1,5 @@
 from degree_planner.models import Course
+from degree_planner.validation import validate_course_graph
 
 
 def find_available_courses(
@@ -61,3 +62,35 @@ def count_unfinished_prerequisites(
             if prerequisite not in completed:
                 counts[course.code] += 1
     return counts
+
+
+def topological_sort(
+    courses: list[Course],
+    completed: set[str],
+) -> list[str]:
+    validation = validate_course_graph(courses)
+    if not validation.is_valid:
+        raise ValueError("Cannot sort an invalid course graph")
+    counts = count_unfinished_prerequisites(courses, completed)
+    dependents = build_dependents(courses)
+    ready: list[str] = []
+    order: list[str] = []
+    for course in courses:
+        if course.code not in completed:
+            if counts[course.code] == 0:
+                ready.append(course.code)
+    while ready:
+        course_code = ready.pop()
+        order.append(course_code)
+        for dependent in dependents[course_code]:
+            if dependent not in completed:
+                counts[dependent] -= 1
+                if counts[dependent] == 0:
+                    ready.append(dependent)
+    remaining_count = 0
+    for course in courses:
+        if course.code not in completed:
+            remaining_count += 1
+    if len(order) != remaining_count:
+        raise ValueError("Cannot order all remaining courses")
+    return order
