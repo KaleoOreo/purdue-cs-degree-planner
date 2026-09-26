@@ -7,6 +7,7 @@ from degree_planner.planning import (
     count_unfinished_prerequisites,
     find_available_courses,
     plan_next_semester,
+    topological_sort,
 )
 
 
@@ -103,3 +104,12 @@ def test_count_unfinished_prerequisites_excludes_completed():
     ]
     counts = count_unfinished_prerequisites(courses, {"B"})
     assert counts == {"A": 1, "B": 0, "C": 0}
+
+
+def test_topological_sort_places_prerequisite_first():
+    courses = [
+        Course("A", "Course A", 3, "core", ["B"]),
+        Course("B", "Course B", 3, "core"),
+    ]
+    order = topological_sort(courses, set())
+    assert order == ["B", "A"]
