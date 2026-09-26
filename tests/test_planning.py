@@ -113,3 +113,12 @@ def test_topological_sort_places_prerequisite_first():
     ]
     order = topological_sort(courses, set())
     assert order == ["B", "A"]
+
+
+def test_topological_sort_excludes_completed_courses():
+    courses = [
+        Course("A", "Course A", 3, "core", ["B"]),
+        Course("B", "Course B", 3, "core"),
+    ]
+    order = topological_sort(courses, {"B"})
+    assert order == ["A"]
