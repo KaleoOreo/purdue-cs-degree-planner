@@ -6,6 +6,7 @@ from degree_planner.planning import (
     build_semester_plan,
     count_unfinished_prerequisites,
     find_available_courses,
+    plan_multiple_semesters,
     plan_next_semester,
     topological_sort,
 )
@@ -162,3 +163,11 @@ def test_topological_sort_rejects_missing_prerequisites():
     ]
     with pytest.raises(ValueError, match="Cannot sort an invalid course graph"):
         topological_sort(courses, set())
+
+
+def test_plan_multiple_semesters_separates_prerequisite_and_dependent():
+    prerequisite = Course("B", "Course B", 3, "core")
+    dependent = Course("A", "Course A", 3, "core", ["B"])
+    courses = [dependent, prerequisite]
+    semesters = plan_multiple_semesters(courses, set(), max_credits=6)
+    assert semesters == [[prerequisite], [dependent]]
