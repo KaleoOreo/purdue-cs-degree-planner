@@ -154,3 +154,11 @@ def test_topological_sort_rejects_cycles():
     ]
     with pytest.raises(ValueError, match="Cannot sort an invalid course graph"):
         topological_sort(courses, set())
+
+
+def test_topological_sort_rejects_missing_prerequisites():
+    courses = [
+        Course("A", "Course A", 3, "core", ["B"]),
+    ]
+    with pytest.raises(ValueError, match="Cannot sort an invalid course graph"):
+        topological_sort(courses, set())
