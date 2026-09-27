@@ -171,3 +171,12 @@ def test_plan_multiple_semesters_separates_prerequisite_and_dependent():
     courses = [dependent, prerequisite]
     semesters = plan_multiple_semesters(courses, set(), max_credits=6)
     assert semesters == [[prerequisite], [dependent]]
+
+
+def test_plan_multiple_semesters_respects_credit_limit():
+    first = Course("A", "Course A", 3, "core")
+    second = Course("B", "Course B", 3, "core")
+    semesters = plan_multiple_semesters([first, second], set(), max_credits=3)
+    assert len(semesters) == 2
+    assert [first] in semesters
+    assert [second] in semesters
