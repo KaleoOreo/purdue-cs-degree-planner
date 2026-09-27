@@ -134,3 +134,14 @@ def test_topological_sort_respects_branching_prerequisites():
     assert sorted(order) == ["A", "B", "C"]
     assert order.index("B") < order.index("A")
     assert order.index("C") < order.index("A")
+
+
+def test_topological_sort_includes_disconnected_courses():
+    courses = [
+        Course("A", "Course A", 3, "core", ["B"]),
+        Course("B", "Course B", 3, "core"),
+        Course("C", "Course C", 3, "core"),
+    ]
+    order = topological_sort(courses, set())
+    assert sorted(order) == ["A", "B", "C"]
+    assert order.index("B") < order.index("A")
