@@ -215,3 +215,10 @@ def test_plan_multiple_semesters_groups_independent_courses_when_they_fit():
     assert len(semesters[0]) == 2
     assert first in semesters[0]
     assert second in semesters[0]
+
+
+@pytest.mark.parametrize("max_credits", [0, -1])
+def test_plan_multiple_semesters_rejects_nonpositive_credit_limit(max_credits):
+    course = Course("A", "Course A", 3, "core")
+    with pytest.raises(ValueError, match="max_credits must be greater than 0"):
+        plan_multiple_semesters([course], set(), max_credits=max_credits)
