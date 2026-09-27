@@ -190,3 +190,11 @@ def test_plan_multiple_semesters_uses_and_preserves_completed_courses():
     semesters = plan_multiple_semesters(courses, completed, max_credits=6)
     assert semesters == [[dependent]]
     assert completed == {"B"}
+
+
+def test_plan_multiple_semesters_rejects_course_over_credit_limit():
+    course = Course("A", "Course A", 4, "core")
+    with pytest.raises(
+        ValueError, match="Cannot schedule remaining courses within the credit limit"
+    ):
+        plan_multiple_semesters([course], set(), max_credits=3)
