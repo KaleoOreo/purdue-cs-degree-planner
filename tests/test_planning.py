@@ -222,3 +222,12 @@ def test_plan_multiple_semesters_rejects_nonpositive_credit_limit(max_credits):
     course = Course("A", "Course A", 3, "core")
     with pytest.raises(ValueError, match="max_credits must be greater than 0"):
         plan_multiple_semesters([course], set(), max_credits=max_credits)
+
+
+def test_plan_multiple_semesters_rejects_invalid_graph():
+    courses = [
+        Course("A", "Course A", 3, "core", ["B"]),
+        Course("B", "Course B", 3, "core", ["A"]),
+    ]
+    with pytest.raises(ValueError, match="Cannot sort an invalid course graph"):
+        plan_multiple_semesters(courses, set(), max_credits=6)
