@@ -180,3 +180,13 @@ def test_plan_multiple_semesters_respects_credit_limit():
     assert len(semesters) == 2
     assert [first] in semesters
     assert [second] in semesters
+
+
+def test_plan_multiple_semesters_uses_and_preserves_completed_courses():
+    prerequisite = Course("B", "Course B", 3, "core")
+    dependent = Course("A", "Course A", 3, "core", ["B"])
+    courses = [dependent, prerequisite]
+    completed = {"B"}
+    semesters = plan_multiple_semesters(courses, completed, max_credits=6)
+    assert semesters == [[dependent]]
+    assert completed == {"B"}
