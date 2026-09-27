@@ -230,3 +230,17 @@ def test_main_runs_plan_all_command(tmp_path):
         "Semester 2 (3 credits)",
         "  CS 18200: Foundations (3 credits)",
     ]
+
+
+def test_main_plan_all_reports_impossible_plan(tmp_path):
+    database = str(tmp_path / "planner.db")
+    main(["--database", database, "import", "tests/fixtures/courses.csv"])
+    result = main(["--database", database, "plan-all", "--max-credits", "3"])
+    assert result == [
+        "Error: Cannot schedule remaining courses within the credit limit"
+    ]
+
+
+def test_main_plan_all_reports_empty_plan():
+    result = main(["--database", ":memory:", "plan-all"])
+    assert result == ["No remaining courses to plan"]
