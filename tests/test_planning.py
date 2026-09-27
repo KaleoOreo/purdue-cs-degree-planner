@@ -198,3 +198,10 @@ def test_plan_multiple_semesters_rejects_course_over_credit_limit():
         ValueError, match="Cannot schedule remaining courses within the credit limit"
     ):
         plan_multiple_semesters([course], set(), max_credits=3)
+
+
+def test_plan_multiple_semesters_returns_empty_when_all_completed():
+    course = Course("A", "Course A", 3, "core")
+    completed = {"A"}
+    semesters = plan_multiple_semesters([course], completed, max_credits=6)
+    assert semesters == []
