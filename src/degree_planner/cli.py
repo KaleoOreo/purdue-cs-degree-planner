@@ -8,8 +8,11 @@ from degree_planner.database import (
 )
 from degree_planner.exceptions import DuplicateCourseError
 from degree_planner.importers import import_courses_from_csv
-from degree_planner.reports import course_codes
-from degree_planner.services import plan_next_semester_from_database
+from degree_planner.reports import course_codes, format_semester_plan
+from degree_planner.services import (
+    plan_multiple_semesters_from_database,
+    plan_next_semester_from_database,
+)
 from degree_planner.validation import validate_course_graph
 
 
@@ -22,6 +25,12 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
     plan_parser = subparsers.add_parser("plan")
     plan_parser.add_argument(
+        "--max-credits",
+        type=int,
+        default=15,
+    )
+    plan_all_parser = subparsers.add_parser("plan-all")
+    plan_all_parser.add_argument(
         "--max-credits",
         type=int,
         default=15,
@@ -43,6 +52,9 @@ def main(argv: list[str] | None = None) -> list[str]:
     try:
         if args.command == "plan":
             return run_plan_command(args)
+
+        if args.command == "plan-all":
+            return run_plan_all_command(args)
 
         if args.command == "import":
             return run_import_command(args)
@@ -71,6 +83,17 @@ def run_plan_command(args: argparse.Namespace) -> list[str]:
         if not plan:
             return ["No available courses"]
         return course_codes(plan)
+    finally:
+        connection.close()
+
+
+def run_plan_all_command(args: argparse.Namespace) -> list[str]:
+    connection = connect_database(args.database)
+    try:
+        semesters = plan_multiple_semesters_from_database(connection, args.max_credits)
+        return format_semester_plan(semesters)
+    except ValueError as error:
+        return [f"Error: {error}"]
     finally:
         connection.close()
 

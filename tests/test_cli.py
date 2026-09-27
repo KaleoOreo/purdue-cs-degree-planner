@@ -218,3 +218,15 @@ def test_main_runs_validate_command():
     result = main(["--database", TEST_CLI_DATABASE, "validate"])
 
     assert result == ["Course graph is valid"]
+
+
+def test_main_runs_plan_all_command(tmp_path):
+    database = str(tmp_path / "planner.db")
+    main(["--database", database, "import", "tests/fixtures/courses.csv"])
+    result = main(["--database", database, "plan-all", "--max-credits", "7"])
+    assert result == [
+        "Semester 1 (4 credits)",
+        "  CS 18000: Problem Solving (4 credits)",
+        "Semester 2 (3 credits)",
+        "  CS 18200: Foundations (3 credits)",
+    ]
