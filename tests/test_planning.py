@@ -205,3 +205,13 @@ def test_plan_multiple_semesters_returns_empty_when_all_completed():
     completed = {"A"}
     semesters = plan_multiple_semesters([course], completed, max_credits=6)
     assert semesters == []
+
+
+def test_plan_multiple_semesters_groups_independent_courses_when_they_fit():
+    first = Course("A", "Course A", 3, "core")
+    second = Course("B", "Course B", 3, "core")
+    semesters = plan_multiple_semesters([first, second], set(), max_credits=6)
+    assert len(semesters) == 1
+    assert len(semesters[0]) == 2
+    assert first in semesters[0]
+    assert second in semesters[0]
