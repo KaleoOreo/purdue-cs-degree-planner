@@ -145,3 +145,12 @@ def test_topological_sort_includes_disconnected_courses():
     order = topological_sort(courses, set())
     assert sorted(order) == ["A", "B", "C"]
     assert order.index("B") < order.index("A")
+
+
+def test_topological_sort_rejects_cycles():
+    courses = [
+        Course("A", "Course A", 3, "core", ["B"]),
+        Course("B", "Course B", 3, "core", ["A"]),
+    ]
+    with pytest.raises(ValueError, match="Cannot sort an invalid course graph"):
+        topological_sort(courses, set())
