@@ -94,3 +94,38 @@ def topological_sort(
     if len(order) != remaining_count:
         raise ValueError("Cannot order all remaining courses")
     return order
+
+
+def plan_multiple_semesters(
+    courses: list[Course],
+    completed: set[str],
+    max_credits: int,
+) -> list[list[Course]]:
+    if max_credits <= 0:
+        raise ValueError("max_credits must be greater than 0")
+
+    order = topological_sort(courses, completed)
+    planned_completed = completed.copy()
+    semesters: list[list[Course]] = []
+
+    course_by_code: dict[str, Course] = {}
+    for course in courses:
+        course_by_code[course.code] = course
+
+    remaining: list[Course] = []
+    for course_code in order:
+        remaining.append(course_by_code[course_code])
+
+    while remaining:
+        available = find_available_courses(remaining, planned_completed)
+        semester = build_semester_plan(available, max_credits)
+
+        if not semester:
+            raise ValueError("Cannot schedule remaining courses within the credit limit")
+
+        semesters.append(semester)
+        for course in semester:
+            planned_completed.add(course.code)
+            remaining.remove(course)
+
+    return semesters
