@@ -1,0 +1,14 @@
+{
+  "name": "Purdue CS core",
+  "course_codes": [
+    "CS 18000",
+    "CS 18200",
+    "CS 24000",
+    "CS 25000",
+    "CS 25100",
+    "CS 25200"
+  ],
+  "source_url": "https://www.cs.purdue.edu/undergraduate/curriculum/bachelor.html",
+  "verified_on": "2026-09-28",
+  "verification_scope": "Departmental six-course core list; 2026 catalog verification pending"
+}

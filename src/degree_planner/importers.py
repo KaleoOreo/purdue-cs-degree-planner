@@ -1,9 +1,20 @@
 import csv
+import json
 import sqlite3
 
 from degree_planner.database import save_course
 from degree_planner.exceptions import DuplicateCourseError
 from degree_planner.models import Course
+from degree_planner.requirements import RequiredCourseGroup
+
+
+def load_required_course_group(path: str) -> RequiredCourseGroup:
+    with open(path, encoding="utf-8") as file:
+        data = json.load(file)
+    return RequiredCourseGroup(
+        name=data["name"],
+        course_codes=set(data["course_codes"]),
+    )
 
 
 def parse_prerequisites(value: str) -> list[str]:

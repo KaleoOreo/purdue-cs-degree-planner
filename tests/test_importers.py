@@ -8,8 +8,20 @@ from degree_planner.importers import (
     course_from_row,
     import_courses_from_csv,
     load_courses_from_csv,
+    load_required_course_group,
     parse_prerequisites,
 )
+
+
+def test_load_required_course_group_from_json(tmp_path):
+    path = tmp_path / "core.json"
+    path.write_text(
+        '{"name": "Example core", "course_codes": ["CS 18000", "CS 18200"]}',
+        encoding="utf-8",
+    )
+    group = load_required_course_group(str(path))
+    assert group.name == "Example core"
+    assert group.course_codes == {"CS 18000", "CS 18200"}
 
 
 def test_parse_prerequisites_splits_semicolon_values():

@@ -19,6 +19,14 @@ Do not infer Fall 2028 requirements from this development baseline.
 
 ## Current Coverage
 
+`purdue_cs_core.json` records the six courses in the department's "Core
+Requirements (21)" table, with its source URL and verification date. It describes
+required course membership only, not prerequisites, grades, or a full degree.
+The source also specifies a minimum grade of C for major courses; the current
+course-code completion model does not verify that condition. Other requirements
+outside this six-course table are not included. This is a departmental snapshot,
+not a fully verified 2026 catalog dataset.
+
 `tests/fixtures/courses.csv` remains synthetic test data, not a verified catalog.
 The current completion records contain course codes only; they do not establish
 minimum grades, accepted transfer credit, or satisfaction of full degree rules.
