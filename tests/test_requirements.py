@@ -64,3 +64,16 @@ def test_course_choice_group_counts_remaining_choices(completed, expected):
 def test_course_choice_group_rejects_invalid_counts(course_codes, required_count):
     with pytest.raises(ValueError, match="required_count must be between"):
         CourseChoiceGroup("Example elective", course_codes, required_count)
+
+
+@pytest.mark.parametrize(
+    "completed, expected",
+    [
+        pytest.param({"A", "X"}, False, id="not-enough"),
+        pytest.param({"A", "C"}, True, id="exactly-enough"),
+        pytest.param({"A", "B", "C"}, True, id="extra-completions"),
+    ],
+)
+def test_course_choice_group_reports_satisfaction(completed, expected):
+    group = CourseChoiceGroup("Example elective", {"A", "B", "C"}, 2)
+    assert group.is_satisfied(completed) is expected

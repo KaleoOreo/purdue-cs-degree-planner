@@ -33,3 +33,6 @@ class CourseChoiceGroup:
     def remaining_count(self, completed: set[str]) -> int:
         qualifying = self.course_codes & completed
         return max(0, self.required_count - len(qualifying))
+
+    def is_satisfied(self, completed: set[str]) -> bool:
+        return self.remaining_count(completed) == 0
