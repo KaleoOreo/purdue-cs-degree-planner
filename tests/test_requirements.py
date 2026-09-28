@@ -1,4 +1,7 @@
+import pytest
+
 from degree_planner.requirements import (
+    CourseChoiceGroup,
     RequiredCourseGroup,
     find_missing_required_courses,
 )
@@ -34,3 +37,16 @@ def test_required_course_group_is_satisfied_only_after_all_courses_completed():
     assert group.is_satisfied(completed) is False
     completed.add("B")
     assert group.is_satisfied(completed) is True
+
+
+@pytest.mark.parametrize(
+    "completed, expected",
+    [
+        pytest.param({"A", "X"}, 1, id="partial-completion"),
+        pytest.param({"A", "C", "X"}, 0, id="exactly-enough"),
+        pytest.param({"A", "B", "C"}, 0, id="extra-completions"),
+    ],
+)
+def test_course_choice_group_counts_remaining_choices(completed, expected):
+    group = CourseChoiceGroup("Example elective", {"A", "B", "C"}, 2)
+    assert group.remaining_count(completed) == expected
