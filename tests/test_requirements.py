@@ -26,3 +26,11 @@ def test_required_course_groups_check_their_own_course_codes():
     assert second.missing_courses(completed) == {"C"}
     assert first.course_codes == {"A", "B"}
     assert second.course_codes == {"B", "C"}
+
+
+def test_required_course_group_is_satisfied_only_after_all_courses_completed():
+    group = RequiredCourseGroup("Example group", {"A", "B"})
+    completed = {"A"}
+    assert group.is_satisfied(completed) is False
+    completed.add("B")
+    assert group.is_satisfied(completed) is True

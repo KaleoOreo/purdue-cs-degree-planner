@@ -15,3 +15,6 @@ class RequiredCourseGroup:
 
     def missing_courses(self, completed: set[str]) -> set[str]:
         return find_missing_required_courses(self.course_codes, completed)
+
+    def is_satisfied(self, completed: set[str]) -> bool:
+        return not self.missing_courses(completed)
