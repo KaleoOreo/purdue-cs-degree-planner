@@ -2,10 +2,25 @@ import sqlite3
 
 from degree_planner.database import initialize_database, mark_completed, save_course
 from degree_planner.models import Course
+from degree_planner.requirements import RequiredCourseGroup
 from degree_planner.services import (
+    find_missing_required_courses_from_database,
     plan_multiple_semesters_from_database,
     plan_next_semester_from_database,
 )
+
+
+def test_missing_required_courses_uses_saved_completions():
+    connection = sqlite3.connect(":memory:")
+    try:
+        initialize_database(connection)
+        group = RequiredCourseGroup("Example core", {"CS 18000", "CS 18200"})
+        mark_completed(connection, "CS 18000")
+        mark_completed(connection, "OTHER 10000")
+        missing = find_missing_required_courses_from_database(connection, group)
+        assert missing == {"CS 18200"}
+    finally:
+        connection.close()
 
 
 def test_plan_next_semester_from_database_uses_saved_data():
