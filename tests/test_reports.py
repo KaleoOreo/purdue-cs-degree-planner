@@ -1,5 +1,27 @@
+import pytest
+
 from degree_planner.models import Course
-from degree_planner.reports import course_codes, format_semester_plan, total_credits
+from degree_planner.reports import (
+    course_codes,
+    format_required_course_group,
+    format_semester_plan,
+    total_credits,
+)
+
+
+@pytest.mark.parametrize(
+    "missing, expected",
+    [
+        pytest.param(set(), ["Core: no missing required courses"], id="none-missing"),
+        pytest.param(
+            {"CS 24000", "CS 18200"},
+            ["Core: missing required courses", "  CS 18200", "  CS 24000"],
+            id="missing-courses-sorted",
+        ),
+    ],
+)
+def test_format_required_course_group(missing, expected):
+    assert format_required_course_group("Core", missing) == expected
 
 
 def test_course_codes_returns_codes_in_order():

@@ -1,6 +1,15 @@
 from degree_planner.models import Course
 
 
+def format_required_course_group(name: str, missing: set[str]) -> list[str]:
+    if not missing:
+        return [f"{name}: no missing required courses"]
+    lines = [f"{name}: missing required courses"]
+    for code in sorted(missing):
+        lines.append(f"  {code}")
+    return lines
+
+
 def course_codes(courses: list[Course]) -> list[str]:
     return [
         course.code
