@@ -244,3 +244,18 @@ def test_main_plan_all_reports_impossible_plan(tmp_path):
 def test_main_plan_all_reports_empty_plan():
     result = main(["--database", ":memory:", "plan-all"])
     assert result == ["No remaining courses to plan"]
+
+
+def test_main_requirements_uses_saved_completions(tmp_path):
+    database = str(tmp_path / "planner.db")
+    requirements = tmp_path / "core.json"
+    requirements.write_text(
+        '{"name": "Example core", "course_codes": ["CS 18000", "CS 18200"]}',
+        encoding="utf-8",
+    )
+    main(["--database", database, "complete", "CS 18000"])
+    result = main(["--database", database, "requirements", str(requirements)])
+    assert result == [
+        "Example core: missing required courses",
+        "  CS 18200",
+    ]

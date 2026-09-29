@@ -7,9 +7,14 @@ from degree_planner.database import (
     mark_completed,
 )
 from degree_planner.exceptions import DuplicateCourseError
-from degree_planner.importers import import_courses_from_csv
-from degree_planner.reports import course_codes, format_semester_plan
+from degree_planner.importers import import_courses_from_csv, load_required_course_group
+from degree_planner.reports import (
+    course_codes,
+    format_required_course_group,
+    format_semester_plan,
+)
 from degree_planner.services import (
+    find_missing_required_courses_from_database,
     plan_multiple_semesters_from_database,
     plan_next_semester_from_database,
 )
@@ -37,6 +42,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     import_parser = subparsers.add_parser("import")
     import_parser.add_argument("csv_path")
+    requirements_parser = subparsers.add_parser("requirements")
+    requirements_parser.add_argument("requirements_path")
     complete_parser = subparsers.add_parser("complete")
     complete_parser.add_argument("course_code")
     subparsers.add_parser("courses")
@@ -59,6 +66,9 @@ def main(argv: list[str] | None = None) -> list[str]:
         if args.command == "import":
             return run_import_command(args)
 
+        if args.command == "requirements":
+            return run_requirements_command(args)
+
         if args.command == "complete":
             return run_complete_command(args)
 
@@ -74,6 +84,16 @@ def main(argv: list[str] | None = None) -> list[str]:
         return [f"Error: {error}"]
 
     raise ValueError(f"unknown command: {args.command}")
+
+
+def run_requirements_command(args: argparse.Namespace) -> list[str]:
+    group = load_required_course_group(args.requirements_path)
+    connection = connect_database(args.database)
+    try:
+        missing = find_missing_required_courses_from_database(connection, group)
+        return format_required_course_group(group.name, missing)
+    finally:
+        connection.close()
 
 
 def run_plan_command(args: argparse.Namespace) -> list[str]:
