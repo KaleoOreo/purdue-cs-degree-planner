@@ -1,6 +1,8 @@
 from argparse import Namespace
 from pathlib import Path
 
+import pytest
+
 from degree_planner.cli import (
     build_parser,
     course_word,
@@ -246,16 +248,29 @@ def test_main_plan_all_reports_empty_plan():
     assert result == ["No remaining courses to plan"]
 
 
-def test_main_requirements_uses_saved_completions(tmp_path):
+@pytest.mark.parametrize(
+    "completed, expected",
+    [
+        pytest.param(
+            {"CS 18000"},
+            ["Example core: missing required courses", "  CS 18200"],
+            id="partially-completed",
+        ),
+        pytest.param(
+            {"CS 18000", "CS 18200"},
+            ["Example core: no missing required courses"],
+            id="all-completed",
+        ),
+    ],
+)
+def test_main_requirements_uses_saved_completions(tmp_path, completed, expected):
     database = str(tmp_path / "planner.db")
     requirements = tmp_path / "core.json"
     requirements.write_text(
         '{"name": "Example core", "course_codes": ["CS 18000", "CS 18200"]}',
         encoding="utf-8",
     )
-    main(["--database", database, "complete", "CS 18000"])
+    for code in completed:
+        main(["--database", database, "complete", code])
     result = main(["--database", database, "requirements", str(requirements)])
-    assert result == [
-        "Example core: missing required courses",
-        "  CS 18200",
-    ]
+    assert result == expected
