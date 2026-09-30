@@ -6,7 +6,7 @@ from degree_planner.database import (
     load_courses,
     mark_completed,
 )
-from degree_planner.exceptions import DuplicateCourseError
+from degree_planner.exceptions import DuplicateCourseError, RequirementsLoadError
 from degree_planner.importers import import_courses_from_csv, load_required_course_group
 from degree_planner.reports import (
     course_codes,
@@ -87,7 +87,12 @@ def main(argv: list[str] | None = None) -> list[str]:
 
 
 def run_requirements_command(args: argparse.Namespace) -> list[str]:
-    group = load_required_course_group(args.requirements_path)
+    try:
+        group = load_required_course_group(args.requirements_path)
+    except FileNotFoundError:
+        return [f"Error: Requirements file not found: {args.requirements_path}"]
+    except RequirementsLoadError as error:
+        return [f"Error: {error}"]
     connection = connect_database(args.database)
     try:
         missing = find_missing_required_courses_from_database(connection, group)

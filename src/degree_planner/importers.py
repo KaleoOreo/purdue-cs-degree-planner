@@ -3,14 +3,31 @@ import json
 import sqlite3
 
 from degree_planner.database import save_course
-from degree_planner.exceptions import DuplicateCourseError
+from degree_planner.exceptions import DuplicateCourseError, RequirementsLoadError
 from degree_planner.models import Course
 from degree_planner.requirements import RequiredCourseGroup
 
 
 def load_required_course_group(path: str) -> RequiredCourseGroup:
-    with open(path, encoding="utf-8") as file:
-        data = json.load(file)
+    try:
+        with open(path, encoding="utf-8") as file:
+            data = json.load(file)
+    except json.JSONDecodeError as error:
+        raise RequirementsLoadError(
+            f"Invalid requirements JSON at line {error.lineno}: {error.msg}"
+        ) from error
+    if not isinstance(data, dict):
+        raise RequirementsLoadError("Requirements JSON must contain an object")
+    for field in ("name", "course_codes"):
+        if field not in data:
+            raise RequirementsLoadError(f"Missing required field: {field}")
+    if not isinstance(data["name"], str):
+        raise RequirementsLoadError("Field 'name' must be a string")
+    if not isinstance(data["course_codes"], list):
+        raise RequirementsLoadError("Field 'course_codes' must be a list")
+    for code in data["course_codes"]:
+        if not isinstance(code, str):
+            raise RequirementsLoadError("Every course code must be a string")
     return RequiredCourseGroup(
         name=data["name"],
         course_codes=set(data["course_codes"]),

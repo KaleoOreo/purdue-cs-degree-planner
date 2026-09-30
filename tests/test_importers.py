@@ -3,7 +3,7 @@ import sqlite3
 import pytest
 
 from degree_planner.database import initialize_database, load_courses
-from degree_planner.exceptions import DuplicateCourseError
+from degree_planner.exceptions import DuplicateCourseError, RequirementsLoadError
 from degree_planner.importers import (
     course_from_row,
     import_courses_from_csv,
@@ -22,6 +22,33 @@ def test_load_required_course_group_from_json(tmp_path):
     group = load_required_course_group(str(path))
     assert group.name == "Example core"
     assert group.course_codes == {"CS 18000", "CS 18200"}
+
+
+@pytest.mark.parametrize(
+    "content, message",
+    [
+        pytest.param('[]', "must contain an object", id="not-an-object"),
+        pytest.param('{"course_codes": []}', "Missing required field: name", id="missing-name"),
+        pytest.param('{"name": "Core"}', "Missing required field: course_codes", id="missing-codes"),
+        pytest.param(
+            '{"name": 42, "course_codes": []}', "Field 'name' must be a string", id="name-not-string",
+        ),
+        pytest.param(
+            '{"name": "Core", "course_codes": 42}', "Field 'course_codes' must be a list", id="codes-number",
+        ),
+        pytest.param(
+            '{"name": "Core", "course_codes": "CS 18000"}', "Field 'course_codes' must be a list", id="codes-string",
+        ),
+        pytest.param(
+            '{"name": "Core", "course_codes": ["CS 18000", 42]}', "Every course code must be a string", id="code-not-string",
+        ),
+    ],
+)
+def test_load_required_course_group_rejects_invalid_data(tmp_path, content, message):
+    path = tmp_path / "requirements.json"
+    path.write_text(content, encoding="utf-8")
+    with pytest.raises(RequirementsLoadError, match=message):
+        load_required_course_group(str(path))
 
 
 def test_parse_prerequisites_splits_semicolon_values():
