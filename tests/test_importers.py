@@ -28,6 +28,19 @@ def test_load_curriculum_from_json(tmp_path):
     assert curriculum.choice_groups[0].required_count == 1
 
 
+def test_load_purdue_software_engineering_curriculum():
+    curriculum = load_curriculum("data/purdue_software_engineering.json")
+    assert curriculum.name == "Purdue CS - Software Engineering departmental requirements"
+    assert curriculum.required_groups[0].course_codes == {
+        "CS 18000", "CS 18200", "CS 24000", "CS 25000", "CS 25100", "CS 25200"
+    }
+    assert curriculum.required_groups[1].course_codes == {
+        "CS 30700", "CS 38100", "CS 40700", "CS 40800"
+    }
+    assert curriculum.choice_groups[0].course_codes == {"CS 35200", "CS 35400"}
+    assert curriculum.choice_groups[0].required_count == 1
+
+
 @pytest.mark.parametrize(
     "content, message",
     [

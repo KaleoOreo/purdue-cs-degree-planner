@@ -1,0 +1,41 @@
+{
+  "name": "Purdue CS - Software Engineering departmental requirements",
+  "required_groups": [
+    {
+      "name": "Purdue CS core",
+      "course_codes": [
+        "CS 18000",
+        "CS 18200",
+        "CS 24000",
+        "CS 25000",
+        "CS 25100",
+        "CS 25200"
+      ]
+    },
+    {
+      "name": "Software Engineering required courses",
+      "course_codes": [
+        "CS 30700",
+        "CS 38100",
+        "CS 40700",
+        "CS 40800"
+      ]
+    }
+  ],
+  "choice_groups": [
+    {
+      "name": "Software Engineering systems choice",
+      "course_codes": [
+        "CS 35200",
+        "CS 35400"
+      ],
+      "required_count": 1
+    }
+  ],
+  "source_urls": [
+    "https://www.cs.purdue.edu/undergraduate/curriculum/bachelor.html",
+    "https://www.cs.purdue.edu/undergraduate/curriculum/track-softengr-fall2023.html"
+  ],
+  "verified_on": "2026-10-01",
+  "verification_scope": "Departmental six-course CS core, fixed Software Engineering track courses, and systems choice. Track elective, CS 19300 applicability, non-CS degree requirements, and 2026 catalog verification remain pending."
+}
