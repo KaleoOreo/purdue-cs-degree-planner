@@ -3,10 +3,23 @@ import pytest
 from degree_planner.models import Course
 from degree_planner.reports import (
     course_codes,
+    format_course_choice_group,
     format_required_course_group,
     format_semester_plan,
     total_credits,
 )
+
+
+@pytest.mark.parametrize(
+    "remaining_count, options, expected",
+    [
+        pytest.param(0, {"B"}, ["Choice: satisfied"], id="satisfied"),
+        pytest.param(1, {"B", "A"}, ["Choice: 1 additional course required", "Remaining options:", "  A", "  B"], id="one-required"),
+        pytest.param(2, {"C", "B"}, ["Choice: 2 additional courses required", "Remaining options:", "  B", "  C"], id="multiple-required"),
+    ],
+)
+def test_format_course_choice_group(remaining_count, options, expected):
+    assert format_course_choice_group("Choice", remaining_count, options) == expected
 
 
 @pytest.mark.parametrize(

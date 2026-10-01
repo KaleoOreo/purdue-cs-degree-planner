@@ -1,6 +1,21 @@
 from degree_planner.models import Course
 
 
+def format_course_choice_group(
+    name: str,
+    remaining_count: int,
+    remaining_options: set[str],
+) -> list[str]:
+    if remaining_count == 0:
+        return [f"{name}: satisfied"]
+    course_word = "course" if remaining_count == 1 else "courses"
+    lines = [f"{name}: {remaining_count} additional {course_word} required"]
+    lines.append("Remaining options:")
+    for code in sorted(remaining_options):
+        lines.append(f"  {code}")
+    return lines
+
+
 def format_required_course_group(name: str, missing: set[str]) -> list[str]:
     if not missing:
         return [f"{name}: no missing required courses"]

@@ -53,6 +53,19 @@ def test_course_choice_group_counts_remaining_choices(completed, expected):
 
 
 @pytest.mark.parametrize(
+    "completed, expected",
+    [
+        pytest.param(set(), {"A", "B", "C"}, id="none-completed"),
+        pytest.param({"A", "X"}, {"B", "C"}, id="one-option-completed"),
+        pytest.param({"A", "B", "C"}, set(), id="all-options-completed"),
+    ],
+)
+def test_course_choice_group_returns_remaining_options(completed, expected):
+    group = CourseChoiceGroup("Example elective", {"A", "B", "C"}, 2)
+    assert group.remaining_options(completed) == expected
+
+
+@pytest.mark.parametrize(
     "course_codes, required_count",
     [
         pytest.param({"A", "B", "C"}, 0, id="zero-required"),
