@@ -53,3 +53,13 @@ class Curriculum:
         ) and all(
             group.is_satisfied(completed) for group in self.choice_groups
         )
+
+
+@dataclass
+class CurriculumProgress:
+    curriculum: Curriculum
+    completed: set[str]
+
+    @property
+    def is_complete(self) -> bool:
+        return self.curriculum.is_satisfied(self.completed)

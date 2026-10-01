@@ -4,10 +4,32 @@ from degree_planner.models import Course
 from degree_planner.reports import (
     course_codes,
     format_course_choice_group,
+    format_curriculum_progress,
     format_required_course_group,
     format_semester_plan,
     total_credits,
 )
+from degree_planner.requirements import (
+    CourseChoiceGroup,
+    Curriculum,
+    CurriculumProgress,
+    RequiredCourseGroup,
+)
+
+
+@pytest.mark.parametrize(
+    "completed, expected",
+    [
+        pytest.param({"A", "C"}, ["Example: incomplete", "Core: missing required courses", "  B", "Systems: satisfied"], id="incomplete"),
+        pytest.param({"A", "B", "C"}, ["Example: complete", "Core: no missing required courses", "Systems: satisfied"], id="complete"),
+    ],
+)
+def test_format_curriculum_progress(completed, expected):
+    core = RequiredCourseGroup("Core", {"A", "B"})
+    systems = CourseChoiceGroup("Systems", {"C", "D"}, 1)
+    curriculum = Curriculum("Example", [core], [systems])
+    progress = CurriculumProgress(curriculum, completed)
+    assert format_curriculum_progress(progress) == expected
 
 
 @pytest.mark.parametrize(

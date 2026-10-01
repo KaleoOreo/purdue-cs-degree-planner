@@ -3,7 +3,20 @@ import sqlite3
 from degree_planner.database import load_completed_courses, load_courses
 from degree_planner.models import Course
 from degree_planner.planning import plan_multiple_semesters, plan_next_semester
-from degree_planner.requirements import CourseChoiceGroup, RequiredCourseGroup
+from degree_planner.requirements import (
+    CourseChoiceGroup,
+    Curriculum,
+    CurriculumProgress,
+    RequiredCourseGroup,
+)
+
+
+def find_curriculum_progress_from_database(
+    connection: sqlite3.Connection,
+    curriculum: Curriculum,
+) -> CurriculumProgress:
+    completed = load_completed_courses(connection)
+    return CurriculumProgress(curriculum, completed)
 
 
 def find_remaining_choice_count_from_database(

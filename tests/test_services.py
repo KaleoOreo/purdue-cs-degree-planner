@@ -4,14 +4,31 @@ import pytest
 
 from degree_planner.database import initialize_database, mark_completed, save_course
 from degree_planner.models import Course
-from degree_planner.requirements import CourseChoiceGroup, RequiredCourseGroup
+from degree_planner.requirements import CourseChoiceGroup, Curriculum, RequiredCourseGroup
 from degree_planner.services import (
+    find_curriculum_progress_from_database,
     find_missing_required_courses_from_database,
     find_remaining_choice_count_from_database,
     find_remaining_choice_options_from_database,
     plan_multiple_semesters_from_database,
     plan_next_semester_from_database,
 )
+
+
+def test_curriculum_progress_uses_saved_completions():
+    connection = sqlite3.connect(":memory:")
+    try:
+        initialize_database(connection)
+        core = RequiredCourseGroup("Core", {"A", "B"})
+        systems = CourseChoiceGroup("Systems", {"C", "D"}, 1)
+        curriculum = Curriculum("Example", [core], [systems])
+        for code in {"A", "B", "C"}:
+            mark_completed(connection, code)
+        progress = find_curriculum_progress_from_database(connection, curriculum)
+        assert progress.completed == {"A", "B", "C"}
+        assert progress.is_complete is True
+    finally:
+        connection.close()
 
 
 @pytest.mark.parametrize(
