@@ -14,6 +14,14 @@ def find_remaining_choice_count_from_database(
     return group.remaining_count(completed)
 
 
+def find_remaining_choice_options_from_database(
+    connection: sqlite3.Connection,
+    group: CourseChoiceGroup,
+) -> set[str]:
+    completed = load_completed_courses(connection)
+    return group.remaining_options(completed)
+
+
 def find_missing_required_courses_from_database(
     connection: sqlite3.Connection,
     group: RequiredCourseGroup,

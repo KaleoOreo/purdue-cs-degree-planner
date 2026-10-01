@@ -274,3 +274,23 @@ def test_main_requirements_uses_saved_completions(tmp_path, completed, expected)
         main(["--database", database, "complete", code])
     result = main(["--database", database, "requirements", str(requirements)])
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "completed, expected",
+    [
+        pytest.param(set(), ["Systems choice: 1 additional course required", "Remaining options:", "  CS 35200", "  CS 35400"], id="none-completed"),
+        pytest.param({"CS 35400"}, ["Systems choice: satisfied"], id="choice-completed"),
+    ],
+)
+def test_main_choice_requirements_uses_saved_completions(tmp_path, completed, expected):
+    database = str(tmp_path / "planner.db")
+    requirements = tmp_path / "choice.json"
+    requirements.write_text(
+        '{"name": "Systems choice", "course_codes": ["CS 35200", "CS 35400"], "required_count": 1}',
+        encoding="utf-8",
+    )
+    for code in completed:
+        main(["--database", database, "complete", code])
+    result = main(["--database", database, "choice-requirements", str(requirements)])
+    assert result == expected

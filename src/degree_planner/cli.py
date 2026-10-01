@@ -7,14 +7,21 @@ from degree_planner.database import (
     mark_completed,
 )
 from degree_planner.exceptions import DuplicateCourseError, RequirementsLoadError
-from degree_planner.importers import import_courses_from_csv, load_required_course_group
+from degree_planner.importers import (
+    import_courses_from_csv,
+    load_course_choice_group,
+    load_required_course_group,
+)
 from degree_planner.reports import (
     course_codes,
+    format_course_choice_group,
     format_required_course_group,
     format_semester_plan,
 )
 from degree_planner.services import (
     find_missing_required_courses_from_database,
+    find_remaining_choice_count_from_database,
+    find_remaining_choice_options_from_database,
     plan_multiple_semesters_from_database,
     plan_next_semester_from_database,
 )
@@ -44,6 +51,8 @@ def build_parser() -> argparse.ArgumentParser:
     import_parser.add_argument("csv_path")
     requirements_parser = subparsers.add_parser("requirements")
     requirements_parser.add_argument("requirements_path")
+    choice_parser = subparsers.add_parser("choice-requirements")
+    choice_parser.add_argument("requirements_path")
     complete_parser = subparsers.add_parser("complete")
     complete_parser.add_argument("course_code")
     subparsers.add_parser("courses")
@@ -68,6 +77,9 @@ def main(argv: list[str] | None = None) -> list[str]:
 
         if args.command == "requirements":
             return run_requirements_command(args)
+
+        if args.command == "choice-requirements":
+            return run_choice_requirements_command(args)
 
         if args.command == "complete":
             return run_complete_command(args)
@@ -97,6 +109,22 @@ def run_requirements_command(args: argparse.Namespace) -> list[str]:
     try:
         missing = find_missing_required_courses_from_database(connection, group)
         return format_required_course_group(group.name, missing)
+    finally:
+        connection.close()
+
+
+def run_choice_requirements_command(args: argparse.Namespace) -> list[str]:
+    try:
+        group = load_course_choice_group(args.requirements_path)
+    except FileNotFoundError:
+        return [f"Error: Requirements file not found: {args.requirements_path}"]
+    except RequirementsLoadError as error:
+        return [f"Error: {error}"]
+    connection = connect_database(args.database)
+    try:
+        count = find_remaining_choice_count_from_database(connection, group)
+        options = find_remaining_choice_options_from_database(connection, group)
+        return format_course_choice_group(group.name, count, options)
     finally:
         connection.close()
 

@@ -8,27 +8,29 @@ from degree_planner.requirements import CourseChoiceGroup, RequiredCourseGroup
 from degree_planner.services import (
     find_missing_required_courses_from_database,
     find_remaining_choice_count_from_database,
+    find_remaining_choice_options_from_database,
     plan_multiple_semesters_from_database,
     plan_next_semester_from_database,
 )
 
 
 @pytest.mark.parametrize(
-    "completed, expected",
+    "completed, expected_count, expected_options",
     [
-        pytest.param(set(), 1, id="none-completed"),
-        pytest.param({"OTHER 10000"}, 1, id="unrelated-completion"),
-        pytest.param({"CS 35200"}, 0, id="qualifying-completion"),
+        pytest.param(set(), 1, {"CS 35200", "CS 35400"}, id="none-completed"),
+        pytest.param({"OTHER 10000"}, 1, {"CS 35200", "CS 35400"}, id="unrelated-completion"),
+        pytest.param({"CS 35200"}, 0, {"CS 35400"}, id="qualifying-completion"),
     ],
 )
-def test_remaining_choice_count_uses_saved_completions(completed, expected):
+def test_choice_progress_uses_saved_completions(completed, expected_count, expected_options):
     connection = sqlite3.connect(":memory:")
     try:
         initialize_database(connection)
         group = CourseChoiceGroup("Systems choice", {"CS 35200", "CS 35400"}, 1)
         for code in completed:
             mark_completed(connection, code)
-        assert find_remaining_choice_count_from_database(connection, group) == expected
+        assert find_remaining_choice_count_from_database(connection, group) == expected_count
+        assert find_remaining_choice_options_from_database(connection, group) == expected_options
     finally:
         connection.close()
 
