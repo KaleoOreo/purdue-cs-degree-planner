@@ -39,3 +39,10 @@ class CourseChoiceGroup:
 
     def is_satisfied(self, completed: set[str]) -> bool:
         return self.remaining_count(completed) == 0
+
+
+@dataclass
+class Curriculum:
+    name: str
+    required_groups: list[RequiredCourseGroup]
+    choice_groups: list[CourseChoiceGroup]

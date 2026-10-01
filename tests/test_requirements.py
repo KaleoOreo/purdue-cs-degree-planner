@@ -2,6 +2,7 @@ import pytest
 
 from degree_planner.requirements import (
     CourseChoiceGroup,
+    Curriculum,
     RequiredCourseGroup,
     find_missing_required_courses,
 )
@@ -37,6 +38,16 @@ def test_required_course_group_is_satisfied_only_after_all_courses_completed():
     assert group.is_satisfied(completed) is False
     completed.add("B")
     assert group.is_satisfied(completed) is True
+
+
+def test_curriculum_keeps_requirement_groups_separate():
+    core = RequiredCourseGroup("Core", {"A", "B"})
+    systems = CourseChoiceGroup("Systems", {"C", "D"}, 1)
+    curriculum = Curriculum("Example curriculum", [core], [systems])
+
+    assert curriculum.name == "Example curriculum"
+    assert curriculum.required_groups == [core]
+    assert curriculum.choice_groups == [systems]
 
 
 @pytest.mark.parametrize(
