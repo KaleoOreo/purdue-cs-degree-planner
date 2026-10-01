@@ -10,15 +10,18 @@ from degree_planner.exceptions import DuplicateCourseError, RequirementsLoadErro
 from degree_planner.importers import (
     import_courses_from_csv,
     load_course_choice_group,
+    load_curriculum,
     load_required_course_group,
 )
 from degree_planner.reports import (
     course_codes,
     format_course_choice_group,
+    format_curriculum_progress,
     format_required_course_group,
     format_semester_plan,
 )
 from degree_planner.services import (
+    find_curriculum_progress_from_database,
     find_missing_required_courses_from_database,
     find_remaining_choice_count_from_database,
     find_remaining_choice_options_from_database,
@@ -53,6 +56,8 @@ def build_parser() -> argparse.ArgumentParser:
     requirements_parser.add_argument("requirements_path")
     choice_parser = subparsers.add_parser("choice-requirements")
     choice_parser.add_argument("requirements_path")
+    progress_parser = subparsers.add_parser("progress")
+    progress_parser.add_argument("curriculum_path")
     complete_parser = subparsers.add_parser("complete")
     complete_parser.add_argument("course_code")
     subparsers.add_parser("courses")
@@ -80,6 +85,9 @@ def main(argv: list[str] | None = None) -> list[str]:
 
         if args.command == "choice-requirements":
             return run_choice_requirements_command(args)
+
+        if args.command == "progress":
+            return run_progress_command(args)
 
         if args.command == "complete":
             return run_complete_command(args)
@@ -125,6 +133,21 @@ def run_choice_requirements_command(args: argparse.Namespace) -> list[str]:
         count = find_remaining_choice_count_from_database(connection, group)
         options = find_remaining_choice_options_from_database(connection, group)
         return format_course_choice_group(group.name, count, options)
+    finally:
+        connection.close()
+
+
+def run_progress_command(args: argparse.Namespace) -> list[str]:
+    try:
+        curriculum = load_curriculum(args.curriculum_path)
+    except FileNotFoundError:
+        return [f"Error: Curriculum file not found: {args.curriculum_path}"]
+    except RequirementsLoadError as error:
+        return [f"Error: {error}"]
+    connection = connect_database(args.database)
+    try:
+        progress = find_curriculum_progress_from_database(connection, curriculum)
+        return format_curriculum_progress(progress)
     finally:
         connection.close()
 

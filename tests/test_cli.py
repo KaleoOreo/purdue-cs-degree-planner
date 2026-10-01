@@ -294,3 +294,36 @@ def test_main_choice_requirements_uses_saved_completions(tmp_path, completed, ex
         main(["--database", database, "complete", code])
     result = main(["--database", database, "choice-requirements", str(requirements)])
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "completed, expected",
+    [
+        pytest.param({"A", "C"}, ["Example: incomplete", "Core: missing required courses", "  B", "Systems: satisfied"], id="incomplete"),
+        pytest.param({"A", "B", "C"}, ["Example: complete", "Core: no missing required courses", "Systems: satisfied"], id="complete"),
+    ],
+)
+def test_main_progress_uses_saved_completions(tmp_path, completed, expected):
+    database = str(tmp_path / "planner.db")
+    curriculum = tmp_path / "curriculum.json"
+    curriculum.write_text(
+        '{"name": "Example", "required_groups": [{"name": "Core", "course_codes": ["A", "B"]}], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"], "required_count": 1}]}',
+        encoding="utf-8",
+    )
+    for code in completed:
+        main(["--database", database, "complete", code])
+    result = main(["--database", database, "progress", str(curriculum)])
+    assert result == expected
+
+
+def test_main_progress_reports_missing_curriculum_file(tmp_path):
+    missing = tmp_path / "missing.json"
+    result = main(["--database", ":memory:", "progress", str(missing)])
+    assert result == [f"Error: Curriculum file not found: {missing}"]
+
+
+def test_main_progress_reports_invalid_curriculum_file(tmp_path):
+    curriculum = tmp_path / "invalid.json"
+    curriculum.write_text('{"name": "Invalid"}', encoding="utf-8")
+    result = main(["--database", ":memory:", "progress", str(curriculum)])
+    assert result == ["Error: Missing required field: required_groups"]
