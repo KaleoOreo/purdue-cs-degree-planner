@@ -5,10 +5,10 @@ import sqlite3
 from degree_planner.database import save_course
 from degree_planner.exceptions import DuplicateCourseError, RequirementsLoadError
 from degree_planner.models import Course
-from degree_planner.requirements import RequiredCourseGroup
+from degree_planner.requirements import CourseChoiceGroup, RequiredCourseGroup
 
 
-def load_required_course_group(path: str) -> RequiredCourseGroup:
+def _load_requirement_data(path: str) -> dict:
     try:
         with open(path, encoding="utf-8") as file:
             data = json.load(file)
@@ -28,10 +28,29 @@ def load_required_course_group(path: str) -> RequiredCourseGroup:
     for code in data["course_codes"]:
         if not isinstance(code, str):
             raise RequirementsLoadError("Every course code must be a string")
+    return data
+
+
+def load_required_course_group(path: str) -> RequiredCourseGroup:
+    data = _load_requirement_data(path)
     return RequiredCourseGroup(
         name=data["name"],
         course_codes=set(data["course_codes"]),
     )
+
+
+def load_course_choice_group(path: str) -> CourseChoiceGroup:
+    data = _load_requirement_data(path)
+    if "required_count" not in data:
+        raise RequirementsLoadError("Missing required field: required_count")
+    if not isinstance(data["required_count"], int):
+        raise RequirementsLoadError("Field 'required_count' must be an integer")
+    try:
+        return CourseChoiceGroup(
+            data["name"], set(data["course_codes"]), data["required_count"]
+        )
+    except ValueError as error:
+        raise RequirementsLoadError(str(error)) from error
 
 
 def parse_prerequisites(value: str) -> list[str]:

@@ -7,10 +7,40 @@ from degree_planner.exceptions import DuplicateCourseError, RequirementsLoadErro
 from degree_planner.importers import (
     course_from_row,
     import_courses_from_csv,
+    load_course_choice_group,
     load_courses_from_csv,
     load_required_course_group,
     parse_prerequisites,
 )
+
+
+def test_load_course_choice_group_from_json(tmp_path):
+    path = tmp_path / "choice.json"
+    path.write_text(
+        '{"name": "Systems choice", "course_codes": ["CS 35200", "CS 35400"], "required_count": 1}',
+        encoding="utf-8",
+    )
+    group = load_course_choice_group(str(path))
+    assert group.name == "Systems choice"
+    assert group.course_codes == {"CS 35200", "CS 35400"}
+    assert group.required_count == 1
+    assert group.remaining_count({"CS 35200"}) == 0
+
+
+@pytest.mark.parametrize(
+    "content, message",
+    [
+        pytest.param('{"name": "Choice", "course_codes": ["A", "B"]}', "Missing required field: required_count", id="missing-count"),
+        pytest.param('{"name": "Choice", "course_codes": ["A", "B"], "required_count": "one"}', "must be an integer", id="count-not-integer"),
+        pytest.param('{"name": "Choice", "course_codes": ["A", "B"], "required_count": 0}', "must be between 1", id="zero-count"),
+        pytest.param('{"name": "Choice", "course_codes": ["A", "B"], "required_count": 3}', "must be between 1", id="count-exceeds-choices"),
+    ],
+)
+def test_load_course_choice_group_rejects_invalid_count(tmp_path, content, message):
+    path = tmp_path / "choice.json"
+    path.write_text(content, encoding="utf-8")
+    with pytest.raises(RequirementsLoadError, match=message):
+        load_course_choice_group(str(path))
 
 
 def test_load_required_course_group_from_json(tmp_path):
