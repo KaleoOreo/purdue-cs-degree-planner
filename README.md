@@ -11,6 +11,7 @@ degree-planner --database data/planner.db validate
 degree-planner --database data/planner.db plan-all --max-credits 7
 degree-planner --database data/planner.db complete "CS 18000"
 degree-planner --database data/planner.db plan --max-credits 15
+degree-planner --database data/planner.db progress data/purdue_software_engineering.json
 degree-planner --database data/planner.db courses
 degree-planner --database data/planner.db completed
 ```
@@ -43,6 +44,30 @@ The planner assumes full-semester courses and uses greedy selection in
 topological order. It does not guarantee the fewest semesters or account for
 term-specific course offerings. The sample CSV is test data, not a complete
 Purdue catalog, and `plan-all` does not evaluate degree requirements.
+
+## Curriculum Progress
+
+`progress` compares courses saved by the `complete` command with a combined
+curriculum JSON file. It reports the overall curriculum status followed by the
+status of every required-course and course-choice group.
+
+```powershell
+degree-planner --database data/planner.db progress data/purdue_software_engineering.json
+```
+
+The included Purdue Software Engineering data currently models:
+
+- The six-course Purdue CS core.
+- The fixed Software Engineering track courses: CS 30700, CS 38100, CS 40700,
+  and CS 40800.
+- The requirement to complete one of CS 35200 or CS 35400.
+
+The data is based on Purdue's [CS degree requirements](https://www.cs.purdue.edu/undergraduate/curriculum/bachelor.html)
+and [Software Engineering track requirements](https://www.cs.purdue.edu/undergraduate/curriculum/track-softengr-fall2023.html).
+The track elective, CS 19300 applicability, non-CS degree requirements, and a
+final 2026 catalog audit are not yet modeled. In particular, the elective rule
+where CS 31100 and CS 41100 form one paired option requires a richer model than
+the current individual-course choice group.
 
 ## Run Tests
 
