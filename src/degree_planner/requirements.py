@@ -46,3 +46,10 @@ class Curriculum:
     name: str
     required_groups: list[RequiredCourseGroup]
     choice_groups: list[CourseChoiceGroup]
+
+    def is_satisfied(self, completed: set[str]) -> bool:
+        return all(
+            group.is_satisfied(completed) for group in self.required_groups
+        ) and all(
+            group.is_satisfied(completed) for group in self.choice_groups
+        )

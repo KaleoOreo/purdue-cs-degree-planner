@@ -53,6 +53,22 @@ def test_curriculum_keeps_requirement_groups_separate():
 @pytest.mark.parametrize(
     "completed, expected",
     [
+        pytest.param({"A", "B", "C"}, True, id="all-groups-satisfied"),
+        pytest.param({"A", "C"}, False, id="required-group-incomplete"),
+        pytest.param({"A", "B"}, False, id="choice-group-incomplete"),
+    ],
+)
+def test_curriculum_requires_every_group_to_be_satisfied(completed, expected):
+    core = RequiredCourseGroup("Core", {"A", "B"})
+    systems = CourseChoiceGroup("Systems", {"C", "D"}, 1)
+    curriculum = Curriculum("Example curriculum", [core], [systems])
+
+    assert curriculum.is_satisfied(completed) is expected
+
+
+@pytest.mark.parametrize(
+    "completed, expected",
+    [
         pytest.param({"A", "X"}, 1, id="partial-completion"),
         pytest.param({"A", "C", "X"}, 0, id="exactly-enough"),
         pytest.param({"A", "B", "C"}, 0, id="extra-completions"),
