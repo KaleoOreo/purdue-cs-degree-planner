@@ -8,10 +8,56 @@ from degree_planner.importers import (
     course_from_row,
     import_courses_from_csv,
     load_course_choice_group,
+    load_curriculum,
     load_courses_from_csv,
     load_required_course_group,
     parse_prerequisites,
 )
+
+
+def test_load_curriculum_from_json(tmp_path):
+    path = tmp_path / "curriculum.json"
+    path.write_text(
+        '{"name": "Example curriculum", "required_groups": [{"name": "Core", "course_codes": ["A", "B"]}], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"], "required_count": 1}]}',
+        encoding="utf-8",
+    )
+    curriculum = load_curriculum(str(path))
+    assert curriculum.name == "Example curriculum"
+    assert curriculum.required_groups[0].course_codes == {"A", "B"}
+    assert curriculum.choice_groups[0].course_codes == {"C", "D"}
+    assert curriculum.choice_groups[0].required_count == 1
+
+
+@pytest.mark.parametrize(
+    "content, message",
+    [
+        pytest.param('{"required_groups": [], "choice_groups": []}', "Missing required field: name", id="missing-name"),
+        pytest.param('{"name": "Example", "choice_groups": []}', "Missing required field: required_groups", id="missing-required-groups"),
+        pytest.param('{"name": 42, "required_groups": [], "choice_groups": []}', "Field 'name' must be a string", id="name-not-string"),
+        pytest.param('{"name": "Example", "required_groups": {}, "choice_groups": []}', "Field 'required_groups' must be a list", id="required-groups-not-list"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": {}}', "Field 'choice_groups' must be a list", id="choice-groups-not-list"),
+    ],
+)
+def test_load_curriculum_rejects_invalid_outer_data(tmp_path, content, message):
+    path = tmp_path / "curriculum.json"
+    path.write_text(content, encoding="utf-8")
+    with pytest.raises(RequirementsLoadError, match=message):
+        load_curriculum(str(path))
+
+
+@pytest.mark.parametrize(
+    "content, message",
+    [
+        pytest.param('{"name": "Example", "required_groups": [{"name": "Core"}], "choice_groups": []}', "Missing required field: course_codes", id="invalid-required-group"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"]}]}', "Missing required field: required_count", id="choice-count-missing"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"], "required_count": 3}]}', "must be between 1", id="choice-count-too-large"),
+    ],
+)
+def test_load_curriculum_rejects_invalid_nested_groups(tmp_path, content, message):
+    path = tmp_path / "curriculum.json"
+    path.write_text(content, encoding="utf-8")
+    with pytest.raises(RequirementsLoadError, match=message):
+        load_curriculum(str(path))
 
 
 def test_load_course_choice_group_from_json(tmp_path):
