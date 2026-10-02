@@ -1,6 +1,18 @@
 from dataclasses import dataclass
 
 
+@dataclass(frozen=True)
+class CourseOption:
+    course_codes: frozenset[str]
+
+    def __post_init__(self) -> None:
+        if not self.course_codes:
+            raise ValueError("course option must include at least one course")
+
+    def is_satisfied(self, completed: set[str]) -> bool:
+        return self.course_codes <= completed
+
+
 def find_missing_required_courses(
     required: set[str],
     completed: set[str],

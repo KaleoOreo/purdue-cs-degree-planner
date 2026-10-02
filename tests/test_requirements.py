@@ -2,10 +2,29 @@ import pytest
 
 from degree_planner.requirements import (
     CourseChoiceGroup,
+    CourseOption,
     Curriculum,
     RequiredCourseGroup,
     find_missing_required_courses,
 )
+
+
+@pytest.mark.parametrize(
+    "course_codes, completed, expected",
+    [
+        pytest.param({"A"}, {"A"}, True, id="single-course-completed"),
+        pytest.param({"A", "B"}, {"A"}, False, id="pair-partially-completed"),
+        pytest.param({"A", "B"}, {"A", "B", "X"}, True, id="pair-completed"),
+    ],
+)
+def test_course_option_requires_every_course(course_codes, completed, expected):
+    option = CourseOption(frozenset(course_codes))
+    assert option.is_satisfied(completed) is expected
+
+
+def test_course_option_rejects_empty_course_set():
+    with pytest.raises(ValueError, match="must include at least one course"):
+        CourseOption(frozenset())
 
 
 def test_find_missing_required_courses_ignores_unrelated_completions():
