@@ -18,7 +18,7 @@ from degree_planner.importers import (
 def test_load_curriculum_from_json(tmp_path):
     path = tmp_path / "curriculum.json"
     path.write_text(
-        '{"name": "Example curriculum", "required_groups": [{"name": "Core", "course_codes": ["A", "B"]}], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"], "required_count": 1}]}',
+        '{"name": "Example curriculum", "required_groups": [{"name": "Core", "course_codes": ["A", "B"]}], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"], "required_count": 1}], "option_groups": [{"name": "Elective", "options": [["E"], ["F", "G"]], "required_count": 1}]}',
         encoding="utf-8",
     )
     curriculum = load_curriculum(str(path))
@@ -26,6 +26,9 @@ def test_load_curriculum_from_json(tmp_path):
     assert curriculum.required_groups[0].course_codes == {"A", "B"}
     assert curriculum.choice_groups[0].course_codes == {"C", "D"}
     assert curriculum.choice_groups[0].required_count == 1
+    assert [option.course_codes for option in curriculum.option_groups[0].options] == [
+        frozenset({"E"}), frozenset({"F", "G"})
+    ]
 
 
 def test_load_purdue_software_engineering_curriculum():
@@ -39,16 +42,19 @@ def test_load_purdue_software_engineering_curriculum():
     }
     assert curriculum.choice_groups[0].course_codes == {"CS 35200", "CS 35400"}
     assert curriculum.choice_groups[0].required_count == 1
+    assert curriculum.option_groups == []
 
 
 @pytest.mark.parametrize(
     "content, message",
     [
-        pytest.param('{"required_groups": [], "choice_groups": []}', "Missing required field: name", id="missing-name"),
-        pytest.param('{"name": "Example", "choice_groups": []}', "Missing required field: required_groups", id="missing-required-groups"),
-        pytest.param('{"name": 42, "required_groups": [], "choice_groups": []}', "Field 'name' must be a string", id="name-not-string"),
-        pytest.param('{"name": "Example", "required_groups": {}, "choice_groups": []}', "Field 'required_groups' must be a list", id="required-groups-not-list"),
-        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": {}}', "Field 'choice_groups' must be a list", id="choice-groups-not-list"),
+        pytest.param('{"required_groups": [], "choice_groups": [], "option_groups": []}', "Missing required field: name", id="missing-name"),
+        pytest.param('{"name": "Example", "choice_groups": [], "option_groups": []}', "Missing required field: required_groups", id="missing-required-groups"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": []}', "Missing required field: option_groups", id="missing-option-groups"),
+        pytest.param('{"name": 42, "required_groups": [], "choice_groups": [], "option_groups": []}', "Field 'name' must be a string", id="name-not-string"),
+        pytest.param('{"name": "Example", "required_groups": {}, "choice_groups": [], "option_groups": []}', "Field 'required_groups' must be a list", id="required-groups-not-list"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": {}, "option_groups": []}', "Field 'choice_groups' must be a list", id="choice-groups-not-list"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [], "option_groups": {}}', "Field 'option_groups' must be a list", id="option-groups-not-list"),
     ],
 )
 def test_load_curriculum_rejects_invalid_outer_data(tmp_path, content, message):
@@ -61,9 +67,14 @@ def test_load_curriculum_rejects_invalid_outer_data(tmp_path, content, message):
 @pytest.mark.parametrize(
     "content, message",
     [
-        pytest.param('{"name": "Example", "required_groups": [{"name": "Core"}], "choice_groups": []}', "Missing required field: course_codes", id="invalid-required-group"),
-        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"]}]}', "Missing required field: required_count", id="choice-count-missing"),
-        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"], "required_count": 3}]}', "must be between 1", id="choice-count-too-large"),
+        pytest.param('{"name": "Example", "required_groups": [{"name": "Core"}], "choice_groups": [], "option_groups": []}', "Missing required field: course_codes", id="invalid-required-group"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"]}], "option_groups": []}', "Missing required field: required_count", id="choice-count-missing"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"], "required_count": 3}], "option_groups": []}', "must be between 1", id="choice-count-too-large"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [], "option_groups": [{"name": "Elective", "required_count": 1}]}', "Missing required field: options", id="option-list-missing"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [], "option_groups": [{"name": "Elective", "options": ["A"], "required_count": 1}]}', "Each course option must be a list", id="option-not-list"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [], "option_groups": [{"name": "Elective", "options": [["A", "A"]], "required_count": 1}]}', "duplicate course codes", id="duplicate-code-in-option"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [], "option_groups": [{"name": "Elective", "options": [[]], "required_count": 1}]}', "must include at least one course", id="empty-option"),
+        pytest.param('{"name": "Example", "required_groups": [], "choice_groups": [], "option_groups": [{"name": "Elective", "options": [["A", "B"], ["B", "C"]], "required_count": 1}]}', "overlapping courses", id="overlapping-options"),
     ],
 )
 def test_load_curriculum_rejects_invalid_nested_groups(tmp_path, content, message):

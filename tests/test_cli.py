@@ -307,7 +307,7 @@ def test_main_progress_uses_saved_completions(tmp_path, completed, expected):
     database = str(tmp_path / "planner.db")
     curriculum = tmp_path / "curriculum.json"
     curriculum.write_text(
-        '{"name": "Example", "required_groups": [{"name": "Core", "course_codes": ["A", "B"]}], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"], "required_count": 1}]}',
+        '{"name": "Example", "required_groups": [{"name": "Core", "course_codes": ["A", "B"]}], "choice_groups": [{"name": "Systems", "course_codes": ["C", "D"], "required_count": 1}], "option_groups": []}',
         encoding="utf-8",
     )
     for code in completed:

@@ -12,6 +12,9 @@ class CourseOption:
     def is_satisfied(self, completed: set[str]) -> bool:
         return self.course_codes <= completed
 
+    def can_be_used(self, completed: set[str], used: set[str]) -> bool:
+        return self.is_satisfied(completed) and self.course_codes.isdisjoint(used)
+
 
 @dataclass
 class CourseOptionGroup:
@@ -43,6 +46,24 @@ class CourseOptionGroup:
 
     def is_satisfied(self, completed: set[str]) -> bool:
         return self.remaining_count(completed) == 0
+
+
+def _can_fill_requirement_slots(
+    slots: list[list[CourseOption]],
+    completed: set[str],
+    slot_index: int = 0,
+    used: set[str] | None = None,
+) -> bool:
+    if used is None:
+        used = set()
+    if slot_index == len(slots):
+        return True
+    for option in slots[slot_index]:
+        if option.can_be_used(completed, used):
+            next_used = used | option.course_codes
+            if _can_fill_requirement_slots(slots, completed, slot_index + 1, next_used):
+                return True
+    return False
 
 
 def find_missing_required_courses(
@@ -90,13 +111,31 @@ class Curriculum:
     name: str
     required_groups: list[RequiredCourseGroup]
     choice_groups: list[CourseChoiceGroup]
+    option_groups: list[CourseOptionGroup]
 
     def is_satisfied(self, completed: set[str]) -> bool:
-        return all(
-            group.is_satisfied(completed) for group in self.required_groups
-        ) and all(
-            group.is_satisfied(completed) for group in self.choice_groups
+        return _can_fill_requirement_slots(
+            build_requirement_slots(self),
+            completed,
         )
+
+
+def build_requirement_slots(curriculum: Curriculum) -> list[list[CourseOption]]:
+    slots: list[list[CourseOption]] = []
+    for group in curriculum.required_groups:
+        for code in sorted(group.course_codes):
+            slots.append([CourseOption(frozenset({code}))])
+    for group in curriculum.choice_groups:
+        options = [
+            CourseOption(frozenset({code}))
+            for code in sorted(group.course_codes)
+        ]
+        for _ in range(group.required_count):
+            slots.append(options)
+    for group in curriculum.option_groups:
+        for _ in range(group.required_count):
+            slots.append(group.options)
+    return slots
 
 
 @dataclass

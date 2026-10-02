@@ -21,7 +21,7 @@ def test_curriculum_progress_uses_saved_completions():
         initialize_database(connection)
         core = RequiredCourseGroup("Core", {"A", "B"})
         systems = CourseChoiceGroup("Systems", {"C", "D"}, 1)
-        curriculum = Curriculum("Example", [core], [systems])
+        curriculum = Curriculum("Example", [core], [systems], [])
         for code in {"A", "B", "C"}:
             mark_completed(connection, code)
         progress = find_curriculum_progress_from_database(connection, curriculum)

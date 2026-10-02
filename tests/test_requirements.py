@@ -1,13 +1,66 @@
 import pytest
 
 from degree_planner.requirements import (
+    _can_fill_requirement_slots,
     CourseChoiceGroup,
     CourseOption,
     CourseOptionGroup,
     Curriculum,
     RequiredCourseGroup,
+    build_requirement_slots,
     find_missing_required_courses,
 )
+
+
+def test_requirement_slots_backtrack_after_first_choice_fails():
+    slots = [
+        [CourseOption(frozenset({"A"})), CourseOption(frozenset({"B"}))],
+        [CourseOption(frozenset({"A"}))],
+    ]
+
+    result = _can_fill_requirement_slots(slots, completed={"A", "B"})
+
+    assert result is True
+
+
+def test_requirement_slots_do_not_count_one_course_twice():
+    shared_option = CourseOption(frozenset({"A"}))
+    slots = [[shared_option], [shared_option]]
+
+    result = _can_fill_requirement_slots(slots, completed={"A"})
+
+    assert result is False
+
+
+@pytest.mark.parametrize(
+    "completed, expected",
+    [
+        pytest.param({"A"}, False, id="half-pair-completed"),
+        pytest.param({"A", "B"}, True, id="whole-pair-completed"),
+    ],
+)
+def test_requirement_slots_treat_paired_courses_as_one_option(completed, expected):
+    slots = [[CourseOption(frozenset({"A", "B"}))]]
+
+    assert _can_fill_requirement_slots(slots, completed) is expected
+
+
+def test_build_requirement_slots_normalizes_every_group_type():
+    curriculum = Curriculum(
+        "Example",
+        [RequiredCourseGroup("Core", {"A"})],
+        [CourseChoiceGroup("Choose two", {"B", "C", "D"}, 2)],
+        [CourseOptionGroup("Elective", [CourseOption(frozenset({"E", "F"}))], 1)],
+    )
+
+    slots = build_requirement_slots(curriculum)
+
+    assert [[option.course_codes for option in slot] for slot in slots] == [
+        [frozenset({"A"})],
+        [frozenset({"B"}), frozenset({"C"}), frozenset({"D"})],
+        [frozenset({"B"}), frozenset({"C"}), frozenset({"D"})],
+        [frozenset({"E", "F"})],
+    ]
 
 
 @pytest.mark.parametrize(
@@ -21,6 +74,21 @@ from degree_planner.requirements import (
 def test_course_option_requires_every_course(course_codes, completed, expected):
     option = CourseOption(frozenset(course_codes))
     assert option.is_satisfied(completed) is expected
+
+
+@pytest.mark.parametrize(
+    "completed, used, expected",
+    [
+        pytest.param({"A", "B"}, set(), True, id="completed-and-unused"),
+        pytest.param({"A"}, set(), False, id="partially-completed"),
+        pytest.param({"A", "B"}, {"A"}, False, id="one-course-already-used"),
+    ],
+)
+def test_course_option_can_only_use_completed_unallocated_courses(
+    completed, used, expected
+):
+    option = CourseOption(frozenset({"A", "B"}))
+    assert option.can_be_used(completed, used) is expected
 
 
 def test_course_option_rejects_empty_course_set():
@@ -131,7 +199,7 @@ def test_required_course_group_is_satisfied_only_after_all_courses_completed():
 def test_curriculum_keeps_requirement_groups_separate():
     core = RequiredCourseGroup("Core", {"A", "B"})
     systems = CourseChoiceGroup("Systems", {"C", "D"}, 1)
-    curriculum = Curriculum("Example curriculum", [core], [systems])
+    curriculum = Curriculum("Example curriculum", [core], [systems], [])
 
     assert curriculum.name == "Example curriculum"
     assert curriculum.required_groups == [core]
@@ -149,9 +217,30 @@ def test_curriculum_keeps_requirement_groups_separate():
 def test_curriculum_requires_every_group_to_be_satisfied(completed, expected):
     core = RequiredCourseGroup("Core", {"A", "B"})
     systems = CourseChoiceGroup("Systems", {"C", "D"}, 1)
-    curriculum = Curriculum("Example curriculum", [core], [systems])
+    curriculum = Curriculum("Example curriculum", [core], [systems], [])
 
     assert curriculum.is_satisfied(completed) is expected
+
+
+@pytest.mark.parametrize(
+    "completed, expected",
+    [
+        pytest.param({"A"}, False, id="shared-course-cannot-fill-both-groups"),
+        pytest.param({"A", "B"}, True, id="separate-course-fills-choice-group"),
+    ],
+)
+def test_curriculum_does_not_count_a_course_for_two_groups(completed, expected):
+    required = RequiredCourseGroup("Required", {"A"})
+    choice = CourseChoiceGroup("Choice", {"A", "B"}, 1)
+    curriculum = Curriculum("Example", [required], [choice], [])
+
+    assert curriculum.is_satisfied(completed) is expected
+
+
+def test_empty_curriculum_is_satisfied():
+    curriculum = Curriculum("Empty", [], [], [])
+
+    assert curriculum.is_satisfied(set()) is True
 
 
 @pytest.mark.parametrize(

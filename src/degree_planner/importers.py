@@ -5,7 +5,13 @@ import sqlite3
 from degree_planner.database import save_course
 from degree_planner.exceptions import DuplicateCourseError, RequirementsLoadError
 from degree_planner.models import Course
-from degree_planner.requirements import CourseChoiceGroup, Curriculum, RequiredCourseGroup
+from degree_planner.requirements import (
+    CourseChoiceGroup,
+    CourseOption,
+    CourseOptionGroup,
+    Curriculum,
+    RequiredCourseGroup,
+)
 
 
 def _load_json_object(path: str) -> dict:
@@ -43,12 +49,12 @@ def _validate_requirement_data(data: object) -> None:
 
 
 def _validate_curriculum_data(data: dict) -> None:
-    for field in ("name", "required_groups", "choice_groups"):
+    for field in ("name", "required_groups", "choice_groups", "option_groups"):
         if field not in data:
             raise RequirementsLoadError(f"Missing required field: {field}")
     if not isinstance(data["name"], str):
         raise RequirementsLoadError("Field 'name' must be a string")
-    for field in ("required_groups", "choice_groups"):
+    for field in ("required_groups", "choice_groups", "option_groups"):
         if not isinstance(data[field], list):
             raise RequirementsLoadError(f"Field '{field}' must be a list")
 
@@ -83,6 +89,38 @@ def _course_choice_group_from_data(data: dict) -> CourseChoiceGroup:
         raise RequirementsLoadError(str(error)) from error
 
 
+def _course_option_from_data(data: object) -> CourseOption:
+    if not isinstance(data, list):
+        raise RequirementsLoadError("Each course option must be a list")
+    if not all(isinstance(code, str) for code in data):
+        raise RequirementsLoadError("Every option course code must be a string")
+    if len(set(data)) != len(data):
+        raise RequirementsLoadError("Course option cannot contain duplicate course codes")
+    try:
+        return CourseOption(frozenset(data))
+    except ValueError as error:
+        raise RequirementsLoadError(str(error)) from error
+
+
+def _course_option_group_from_data(data: object) -> CourseOptionGroup:
+    if not isinstance(data, dict):
+        raise RequirementsLoadError("Each option group must be an object")
+    for field in ("name", "options", "required_count"):
+        if field not in data:
+            raise RequirementsLoadError(f"Missing required field: {field}")
+    if not isinstance(data["name"], str):
+        raise RequirementsLoadError("Field 'name' must be a string")
+    if not isinstance(data["options"], list):
+        raise RequirementsLoadError("Field 'options' must be a list")
+    if not isinstance(data["required_count"], int):
+        raise RequirementsLoadError("Field 'required_count' must be an integer")
+    options = [_course_option_from_data(option) for option in data["options"]]
+    try:
+        return CourseOptionGroup(data["name"], options, data["required_count"])
+    except ValueError as error:
+        raise RequirementsLoadError(str(error)) from error
+
+
 def load_curriculum(path: str) -> Curriculum:
     data = _load_json_object(path)
     _validate_curriculum_data(data)
@@ -94,7 +132,11 @@ def load_curriculum(path: str) -> Curriculum:
     for group_data in data["choice_groups"]:
         _validate_requirement_data(group_data)
         choice_groups.append(_course_choice_group_from_data(group_data))
-    return Curriculum(data["name"], required_groups, choice_groups)
+    option_groups = [
+        _course_option_group_from_data(group_data)
+        for group_data in data["option_groups"]
+    ]
+    return Curriculum(data["name"], required_groups, choice_groups, option_groups)
 
 
 def parse_prerequisites(value: str) -> list[str]:

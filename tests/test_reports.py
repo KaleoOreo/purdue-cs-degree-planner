@@ -27,7 +27,7 @@ from degree_planner.requirements import (
 def test_format_curriculum_progress(completed, expected):
     core = RequiredCourseGroup("Core", {"A", "B"})
     systems = CourseChoiceGroup("Systems", {"C", "D"}, 1)
-    curriculum = Curriculum("Example", [core], [systems])
+    curriculum = Curriculum("Example", [core], [systems], [])
     progress = CurriculumProgress(curriculum, completed)
     assert format_curriculum_progress(progress) == expected
 
