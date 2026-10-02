@@ -3,6 +3,7 @@ import pytest
 from degree_planner.requirements import (
     CourseChoiceGroup,
     CourseOption,
+    CourseOptionGroup,
     Curriculum,
     RequiredCourseGroup,
     find_missing_required_courses,
@@ -25,6 +26,74 @@ def test_course_option_requires_every_course(course_codes, completed, expected):
 def test_course_option_rejects_empty_course_set():
     with pytest.raises(ValueError, match="must include at least one course"):
         CourseOption(frozenset())
+
+
+@pytest.mark.parametrize(
+    "completed, expected",
+    [
+        pytest.param(set(), 1, id="nothing-completed"),
+        pytest.param({"B"}, 1, id="half-pair-completed"),
+        pytest.param({"B", "C"}, 0, id="pair-completed"),
+        pytest.param({"A"}, 0, id="single-option-completed"),
+        pytest.param({"A", "B", "C"}, 0, id="extra-option-completed"),
+    ],
+)
+def test_course_option_group_counts_completed_options(completed, expected):
+    options = [CourseOption(frozenset({"A"})), CourseOption(frozenset({"B", "C"}))]
+    group = CourseOptionGroup("Example elective", options, required_count=1)
+    assert group.remaining_count(completed) == expected
+
+
+@pytest.mark.parametrize(
+    "options, required_count",
+    [
+        pytest.param([CourseOption(frozenset({"A"}))], 0, id="zero-required"),
+        pytest.param([CourseOption(frozenset({"A"}))], -1, id="negative-required"),
+        pytest.param([CourseOption(frozenset({"A"}))], 2, id="too-many-required"),
+        pytest.param([], 1, id="no-options"),
+    ],
+)
+def test_course_option_group_rejects_invalid_counts(options, required_count):
+    with pytest.raises(ValueError, match="required_count must be between"):
+        CourseOptionGroup("Example elective", options, required_count)
+
+
+@pytest.mark.parametrize(
+    "options, message",
+    [
+        pytest.param(
+            [CourseOption(frozenset({"A"})), CourseOption(frozenset({"A"}))],
+            "duplicate options",
+            id="duplicate-options",
+        ),
+        pytest.param(
+            [CourseOption(frozenset({"A", "B"})), CourseOption(frozenset({"B", "C"}))],
+            "overlapping courses",
+            id="overlapping-options",
+        ),
+    ],
+)
+def test_course_option_group_rejects_reused_options(options, message):
+    with pytest.raises(ValueError, match=message):
+        CourseOptionGroup("Example elective", options, required_count=1)
+
+
+@pytest.mark.parametrize(
+    "completed, expected_options, expected_satisfied",
+    [
+        pytest.param({"B"}, [{"A"}, {"B", "C"}], False, id="pair-partial"),
+        pytest.param({"A"}, [{"B", "C"}], True, id="single-option-complete"),
+        pytest.param({"B", "C"}, [{"A"}], True, id="paired-option-complete"),
+    ],
+)
+def test_course_option_group_reports_remaining_options(
+    completed, expected_options, expected_satisfied
+):
+    options = [CourseOption(frozenset({"A"})), CourseOption(frozenset({"B", "C"}))]
+    group = CourseOptionGroup("Example elective", options, required_count=1)
+    remaining = [option.course_codes for option in group.remaining_options(completed)]
+    assert remaining == [frozenset(codes) for codes in expected_options]
+    assert group.is_satisfied(completed) is expected_satisfied
 
 
 def test_find_missing_required_courses_ignores_unrelated_completions():

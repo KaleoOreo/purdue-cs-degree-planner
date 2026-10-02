@@ -13,6 +13,38 @@ class CourseOption:
         return self.course_codes <= completed
 
 
+@dataclass
+class CourseOptionGroup:
+    name: str
+    options: list[CourseOption]
+    required_count: int
+
+    def __post_init__(self) -> None:
+        if not 1 <= self.required_count <= len(self.options):
+            raise ValueError("required_count must be between 1 and the number of options")
+        if len(set(self.options)) != len(self.options):
+            raise ValueError("course option group cannot contain duplicate options")
+        seen_courses: set[str] = set()
+        for option in self.options:
+            if seen_courses & option.course_codes:
+                raise ValueError("course options cannot contain overlapping courses")
+            seen_courses.update(option.course_codes)
+
+    def remaining_count(self, completed: set[str]) -> int:
+        satisfied_count = sum(
+            option.is_satisfied(completed) for option in self.options
+        )
+        return max(0, self.required_count - satisfied_count)
+
+    def remaining_options(self, completed: set[str]) -> list[CourseOption]:
+        return [
+            option for option in self.options if not option.is_satisfied(completed)
+        ]
+
+    def is_satisfied(self, completed: set[str]) -> bool:
+        return self.remaining_count(completed) == 0
+
+
 def find_missing_required_courses(
     required: set[str],
     completed: set[str],
