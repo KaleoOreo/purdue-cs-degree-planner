@@ -16,6 +16,22 @@ class CourseOption:
         return self.is_satisfied(completed) and self.course_codes.isdisjoint(used)
 
 
+@dataclass(frozen=True)
+class RequirementSlot:
+    group_name: str
+    options: tuple[CourseOption, ...]
+
+    def __post_init__(self) -> None:
+        if not self.options:
+            raise ValueError("requirement slot must include at least one option")
+
+
+@dataclass(frozen=True)
+class RequirementAllocation:
+    group_name: str
+    option: CourseOption
+
+
 @dataclass
 class CourseOptionGroup:
     name: str
@@ -48,22 +64,36 @@ class CourseOptionGroup:
         return self.remaining_count(completed) == 0
 
 
+def _find_requirement_slot_allocation(
+    slots: list[RequirementSlot],
+    completed: set[str],
+    slot_index: int = 0,
+    used: set[str] | None = None,
+) -> list[CourseOption] | None:
+    if used is None:
+        used = set()
+    if slot_index == len(slots):
+        return []
+    for option in slots[slot_index].options:
+        if option.can_be_used(completed, used):
+            remaining = _find_requirement_slot_allocation(
+                slots, completed, slot_index + 1, used | option.course_codes
+            )
+            if remaining is not None:
+                return [option, *remaining]
+    return None
+
+
 def _can_fill_requirement_slots(
-    slots: list[list[CourseOption]],
+    slots: list[RequirementSlot],
     completed: set[str],
     slot_index: int = 0,
     used: set[str] | None = None,
 ) -> bool:
-    if used is None:
-        used = set()
-    if slot_index == len(slots):
-        return True
-    for option in slots[slot_index]:
-        if option.can_be_used(completed, used):
-            next_used = used | option.course_codes
-            if _can_fill_requirement_slots(slots, completed, slot_index + 1, next_used):
-                return True
-    return False
+    allocation = _find_requirement_slot_allocation(
+        slots, completed, slot_index, used
+    )
+    return allocation is not None
 
 
 def find_missing_required_courses(
@@ -113,28 +143,38 @@ class Curriculum:
     choice_groups: list[CourseChoiceGroup]
     option_groups: list[CourseOptionGroup]
 
+    def find_allocation(
+        self, completed: set[str]
+    ) -> list[RequirementAllocation] | None:
+        slots = build_requirement_slots(self)
+        selected_options = _find_requirement_slot_allocation(slots, completed)
+        if selected_options is None:
+            return None
+        return [
+            RequirementAllocation(slot.group_name, option)
+            for slot, option in zip(slots, selected_options, strict=True)
+        ]
+
     def is_satisfied(self, completed: set[str]) -> bool:
-        return _can_fill_requirement_slots(
-            build_requirement_slots(self),
-            completed,
-        )
+        return self.find_allocation(completed) is not None
 
 
-def build_requirement_slots(curriculum: Curriculum) -> list[list[CourseOption]]:
-    slots: list[list[CourseOption]] = []
+def build_requirement_slots(curriculum: Curriculum) -> list[RequirementSlot]:
+    slots: list[RequirementSlot] = []
     for group in curriculum.required_groups:
         for code in sorted(group.course_codes):
-            slots.append([CourseOption(frozenset({code}))])
+            option = CourseOption(frozenset({code}))
+            slots.append(RequirementSlot(group.name, (option,)))
     for group in curriculum.choice_groups:
-        options = [
+        options = tuple(
             CourseOption(frozenset({code}))
             for code in sorted(group.course_codes)
-        ]
+        )
         for _ in range(group.required_count):
-            slots.append(options)
+            slots.append(RequirementSlot(group.name, options))
     for group in curriculum.option_groups:
         for _ in range(group.required_count):
-            slots.append(group.options)
+            slots.append(RequirementSlot(group.name, tuple(group.options)))
     return slots
 
 

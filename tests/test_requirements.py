@@ -2,20 +2,55 @@ import pytest
 
 from degree_planner.requirements import (
     _can_fill_requirement_slots,
+    _find_requirement_slot_allocation,
     CourseChoiceGroup,
     CourseOption,
     CourseOptionGroup,
     Curriculum,
+    RequirementAllocation,
+    RequirementSlot,
     RequiredCourseGroup,
     build_requirement_slots,
     find_missing_required_courses,
 )
 
 
+def test_requirement_allocation_returns_choices_after_backtracking():
+    slots = [
+        RequirementSlot("First", (
+            CourseOption(frozenset({"A"})), CourseOption(frozenset({"B"}))
+        )),
+        RequirementSlot("Second", (CourseOption(frozenset({"A"})),)),
+    ]
+
+    allocation = _find_requirement_slot_allocation(slots, {"A", "B"})
+
+    assert allocation == [
+        CourseOption(frozenset({"B"})),
+        CourseOption(frozenset({"A"})),
+    ]
+
+
+def test_requirement_allocation_returns_none_when_no_path_works():
+    shared_option = CourseOption(frozenset({"A"}))
+    slots = [
+        RequirementSlot("First", (shared_option,)),
+        RequirementSlot("Second", (shared_option,)),
+    ]
+
+    assert _find_requirement_slot_allocation(slots, {"A"}) is None
+
+
+def test_requirement_allocation_returns_empty_list_for_no_slots():
+    assert _find_requirement_slot_allocation([], set()) == []
+
+
 def test_requirement_slots_backtrack_after_first_choice_fails():
     slots = [
-        [CourseOption(frozenset({"A"})), CourseOption(frozenset({"B"}))],
-        [CourseOption(frozenset({"A"}))],
+        RequirementSlot("First", (
+            CourseOption(frozenset({"A"})), CourseOption(frozenset({"B"}))
+        )),
+        RequirementSlot("Second", (CourseOption(frozenset({"A"})),)),
     ]
 
     result = _can_fill_requirement_slots(slots, completed={"A", "B"})
@@ -25,7 +60,10 @@ def test_requirement_slots_backtrack_after_first_choice_fails():
 
 def test_requirement_slots_do_not_count_one_course_twice():
     shared_option = CourseOption(frozenset({"A"}))
-    slots = [[shared_option], [shared_option]]
+    slots = [
+        RequirementSlot("First", (shared_option,)),
+        RequirementSlot("Second", (shared_option,)),
+    ]
 
     result = _can_fill_requirement_slots(slots, completed={"A"})
 
@@ -40,7 +78,9 @@ def test_requirement_slots_do_not_count_one_course_twice():
     ],
 )
 def test_requirement_slots_treat_paired_courses_as_one_option(completed, expected):
-    slots = [[CourseOption(frozenset({"A", "B"}))]]
+    slots = [
+        RequirementSlot("Pair", (CourseOption(frozenset({"A", "B"})),))
+    ]
 
     assert _can_fill_requirement_slots(slots, completed) is expected
 
@@ -55,7 +95,10 @@ def test_build_requirement_slots_normalizes_every_group_type():
 
     slots = build_requirement_slots(curriculum)
 
-    assert [[option.course_codes for option in slot] for slot in slots] == [
+    assert [slot.group_name for slot in slots] == [
+        "Core", "Choose two", "Choose two", "Elective"
+    ]
+    assert [[option.course_codes for option in slot.options] for slot in slots] == [
         [frozenset({"A"})],
         [frozenset({"B"}), frozenset({"C"}), frozenset({"D"})],
         [frozenset({"B"}), frozenset({"C"}), frozenset({"D"})],
@@ -235,6 +278,18 @@ def test_curriculum_does_not_count_a_course_for_two_groups(completed, expected):
     curriculum = Curriculum("Example", [required], [choice], [])
 
     assert curriculum.is_satisfied(completed) is expected
+
+
+def test_curriculum_finds_allocation_across_overlapping_groups():
+    required = RequiredCourseGroup("Required", {"A"})
+    choice = CourseChoiceGroup("Choice", {"A", "B"}, 1)
+    curriculum = Curriculum("Example", [required], [choice], [])
+
+    assert curriculum.find_allocation({"A"}) is None
+    assert curriculum.find_allocation({"A", "B"}) == [
+        RequirementAllocation("Required", CourseOption(frozenset({"A"}))),
+        RequirementAllocation("Choice", CourseOption(frozenset({"B"}))),
+    ]
 
 
 def test_empty_curriculum_is_satisfied():
