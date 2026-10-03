@@ -300,7 +300,19 @@ def test_main_choice_requirements_uses_saved_completions(tmp_path, completed, ex
     "completed, expected",
     [
         pytest.param({"A", "C"}, ["Example: incomplete", "Core: missing required courses", "  B", "Systems: satisfied"], id="incomplete"),
-        pytest.param({"A", "B", "C"}, ["Example: complete", "Core: no missing required courses", "Systems: satisfied"], id="complete"),
+        pytest.param(
+            {"A", "B", "C"},
+            [
+                "Example: complete",
+                "Core: no missing required courses",
+                "Systems: satisfied",
+                "Requirement allocation:",
+                "  Core: A",
+                "  Core: B",
+                "  Systems: C",
+            ],
+            id="complete",
+        ),
     ],
 )
 def test_main_progress_uses_saved_completions(tmp_path, completed, expected):

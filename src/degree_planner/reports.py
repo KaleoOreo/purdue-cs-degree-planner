@@ -1,5 +1,35 @@
 from degree_planner.models import Course
-from degree_planner.requirements import CurriculumProgress
+from degree_planner.requirements import (
+    CourseOption,
+    CurriculumProgress,
+    RequirementAllocation,
+)
+
+
+def format_requirement_allocation(
+    allocations: list[RequirementAllocation],
+) -> list[str]:
+    lines = ["Requirement allocation:"]
+    for allocation in allocations:
+        courses = " + ".join(sorted(allocation.option.course_codes))
+        lines.append(f"  {allocation.group_name}: {courses}")
+    return lines
+
+
+def format_course_option_group(
+    name: str,
+    remaining_count: int,
+    remaining_options: list[CourseOption],
+) -> list[str]:
+    if remaining_count == 0:
+        return [f"{name}: satisfied"]
+    option_word = "option" if remaining_count == 1 else "options"
+    lines = [f"{name}: {remaining_count} additional {option_word} required"]
+    lines.append("Remaining options:")
+    for option in remaining_options:
+        courses = " + ".join(sorted(option.course_codes))
+        lines.append(f"  {courses}")
+    return lines
 
 
 def format_course_choice_group(
@@ -27,7 +57,8 @@ def format_required_course_group(name: str, missing: set[str]) -> list[str]:
 
 
 def format_curriculum_progress(progress: CurriculumProgress) -> list[str]:
-    status = "complete" if progress.is_complete else "incomplete"
+    allocations = progress.curriculum.find_allocation(progress.completed)
+    status = "complete" if allocations is not None else "incomplete"
     lines = [f"{progress.curriculum.name}: {status}"]
     for group in progress.curriculum.required_groups:
         missing = group.missing_courses(progress.completed)
@@ -36,6 +67,12 @@ def format_curriculum_progress(progress: CurriculumProgress) -> list[str]:
         count = group.remaining_count(progress.completed)
         options = group.remaining_options(progress.completed)
         lines.extend(format_course_choice_group(group.name, count, options))
+    for group in progress.curriculum.option_groups:
+        count = group.remaining_count(progress.completed)
+        options = group.remaining_options(progress.completed)
+        lines.extend(format_course_option_group(group.name, count, options))
+    if allocations is not None:
+        lines.extend(format_requirement_allocation(allocations))
     return lines
 
 
