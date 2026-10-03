@@ -328,6 +328,29 @@ def test_main_progress_uses_saved_completions(tmp_path, completed, expected):
     assert result == expected
 
 
+def test_main_progress_reports_real_purdue_paired_elective(tmp_path):
+    database = str(tmp_path / "planner.db")
+    completed = {
+        "CS 18000", "CS 18200", "CS 19300", "CS 24000",
+        "CS 25000", "CS 25100", "CS 25200", "CS 30700",
+        "CS 38100", "CS 40700", "CS 40800", "CS 35200",
+        "CS 31100", "CS 41100",
+    }
+    for code in completed:
+        main(["--database", database, "complete", code])
+
+    result = main([
+        "--database", database, "progress",
+        "data/purdue_software_engineering.json",
+    ])
+
+    assert result[0] == (
+        "Purdue CS - Software Engineering departmental requirements: complete"
+    )
+    assert "  Software Engineering systems choice: CS 35200" in result
+    assert "  Software Engineering elective: CS 31100 + CS 41100" in result
+
+
 def test_main_progress_reports_missing_curriculum_file(tmp_path):
     missing = tmp_path / "missing.json"
     result = main(["--database", ":memory:", "progress", str(missing)])

@@ -37,12 +37,48 @@ def test_load_purdue_software_engineering_curriculum():
     assert curriculum.required_groups[0].course_codes == {
         "CS 18000", "CS 18200", "CS 24000", "CS 25000", "CS 25100", "CS 25200"
     }
-    assert curriculum.required_groups[1].course_codes == {
+    assert curriculum.required_groups[1].course_codes == {"CS 19300"}
+    assert curriculum.required_groups[2].course_codes == {
         "CS 30700", "CS 38100", "CS 40700", "CS 40800"
     }
     assert curriculum.choice_groups[0].course_codes == {"CS 35200", "CS 35400"}
     assert curriculum.choice_groups[0].required_count == 1
-    assert curriculum.option_groups == []
+    elective = curriculum.option_groups[0]
+    assert elective.name == "Software Engineering elective"
+    assert elective.required_count == 1
+    assert {option.course_codes for option in elective.options} == {
+        frozenset({"CS 31100", "CS 41100"}),
+        frozenset({"CS 34800"}), frozenset({"CS 35100"}),
+        frozenset({"CS 35200"}), frozenset({"CS 35300"}),
+        frozenset({"CS 35400"}), frozenset({"CS 37300"}),
+        frozenset({"CS 42200"}), frozenset({"CS 42600"}),
+        frozenset({"CS 44800"}), frozenset({"CS 45600"}),
+        frozenset({"CS 47300"}), frozenset({"CS 48900"}),
+        frozenset({"CS 51000"}),
+    }
+
+
+@pytest.mark.parametrize(
+    "additional_completions, expected",
+    [
+        pytest.param({"CS 35200"}, False, id="one-course-cannot-fill-two-slots"),
+        pytest.param({"CS 35200", "CS 35400"}, True, id="overlap-courses-split"),
+        pytest.param({"CS 35200", "CS 31100"}, False, id="paired-option-incomplete"),
+        pytest.param(
+            {"CS 35200", "CS 31100", "CS 41100"},
+            True,
+            id="paired-option-complete",
+        ),
+    ],
+)
+def test_purdue_curriculum_allocates_track_options(additional_completions, expected):
+    curriculum = load_curriculum("data/purdue_software_engineering.json")
+    completed: set[str] = set()
+    for group in curriculum.required_groups:
+        completed.update(group.course_codes)
+    completed.update(additional_completions)
+
+    assert curriculum.is_satisfied(completed) is expected
 
 
 @pytest.mark.parametrize(

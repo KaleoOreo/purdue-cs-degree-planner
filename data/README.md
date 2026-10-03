@@ -1,17 +1,17 @@
 # Curriculum Data Scope
 
-Phase 6 targets Purdue West Lafayette's Computer Science B.S., using the 2026
-catalog and Software Engineering as the first supported track. Implement the
-shared CS core first, then track requirements. This is a development target;
-complete support and catalog verification are not yet implemented.
+Phase 6 models Purdue's departmental Computer Science requirements with Software
+Engineering as the first supported track. The data includes the shared CS core,
+CS 19300, track requirements, and track elective options. It remains a
+departmental snapshot rather than a complete degree audit.
 
 ## Sources and Verification
 
-Sources inspected on 2026-09-30:
+Sources rechecked on 2026-10-03:
 
 - [College of Science curriculum resources](https://www.purdue.edu/science/Current_Students/majors/index.html): links to the 2026 catalog and degree progression guide. The catalog link returned HTTP 403 during inspection, so its detailed requirements remain unverified.
 - [CS degree requirements](https://www.cs.purdue.edu/undergraduate/curriculum/bachelor.html): departmental core and track overview.
-- [Software Engineering track](https://www.cs.purdue.edu/undergraduate/curriculum/track-softengr-fall2023.html): departmental page labeled Fall 2023 and Forward; reconcile against the targeted catalog before treating it as the complete 2026 rules.
+- [Software Engineering track](https://www.cs.purdue.edu/undergraduate/curriculum/track-softengr-fall2023.html): departmental page labeled Fall 2023 and Forward; source for the implemented required courses, systems choice, elective options, and no-double-count rule.
 
 Record sources and applicable catalog years alongside curriculum data. Resolve
 source disagreements explicitly rather than combining rules from different years.
@@ -38,11 +38,12 @@ The linked departmental sources establish these implementation requirements:
 - Approved senior-project substitutions require track-chair approval; completion
   codes alone cannot establish that approval.
 
-These are requirements for future implementation, not claims of current support.
-Verify course credits and prerequisite conditions separately from requirement
-membership. Never infer prerequisite edges or term availability from list order
-or suggested semester positions. Synthetic test cases remain useful for checking
-algorithms, but must not be distributed as verified Purdue curriculum data.
+These departmental rules are implemented in
+`purdue_software_engineering.json`. Verify course credits and prerequisite
+conditions separately from requirement membership. Never infer prerequisite
+edges or term availability from list order or suggested semester positions.
+Synthetic test cases remain useful for checking algorithms, but must not be
+distributed as verified Purdue curriculum data.
 
 ## Current Coverage
 
@@ -53,6 +54,13 @@ The source also specifies a minimum grade of C for major courses; the current
 course-code completion model does not verify that condition. Other requirements
 outside this six-course table are not included. This is a departmental snapshot,
 not a fully verified 2026 catalog dataset.
+
+`purdue_software_engineering.json` combines that six-course core with the
+separate CS 19300 requirement, fixed Software Engineering courses, the
+CS 35200/CS 35400 systems choice, and all departmental elective options. The
+allocator supports paired options and prevents a course from receiving both
+required and elective credit. The file does not model non-CS degree
+requirements, grades, approved substitutions, prerequisites, or term offerings.
 
 `tests/fixtures/courses.csv` remains synthetic test data, not a verified catalog.
 The current completion records contain course codes only; they do not establish
