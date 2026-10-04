@@ -96,6 +96,19 @@ def topological_sort(
     return order
 
 
+def calculate_dependency_depths(courses: list[Course]) -> dict[str, int]:
+    order = topological_sort(courses, completed=set())
+    dependents = build_dependents(courses)
+    depths: dict[str, int] = {}
+    for course_code in reversed(order):
+        depths[course_code] = 0
+        for dependent in dependents[course_code]:
+            depths[course_code] = max(
+                depths[course_code], depths[dependent] + 1
+            )
+    return depths
+
+
 def plan_multiple_semesters(
     courses: list[Course],
     completed: set[str],

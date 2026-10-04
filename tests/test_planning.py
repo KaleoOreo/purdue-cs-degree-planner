@@ -4,12 +4,28 @@ from degree_planner.models import Course
 from degree_planner.planning import (
     build_dependents,
     build_semester_plan,
+    calculate_dependency_depths,
     count_unfinished_prerequisites,
     find_available_courses,
     plan_multiple_semesters,
     plan_next_semester,
     topological_sort,
 )
+
+
+def test_calculate_dependency_depths_uses_longest_branch():
+    courses = [
+        Course("A", "Course A", 3, "core"),
+        Course("B", "Course B", 3, "core", ["A"]),
+        Course("C", "Course C", 3, "core", ["A"]),
+        Course("D", "Course D", 3, "core", ["B"]),
+        Course("E", "Course E", 3, "core", ["C"]),
+        Course("F", "Course F", 3, "core", ["E"]),
+    ]
+
+    assert calculate_dependency_depths(courses) == {
+        "A": 3, "B": 1, "C": 2, "D": 0, "E": 1, "F": 0,
+    }
 
 
 def test_find_available_courses_excludes_locked_courses():
