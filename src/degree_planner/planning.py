@@ -109,6 +109,13 @@ def calculate_dependency_depths(courses: list[Course]) -> dict[str, int]:
     return depths
 
 
+def prioritize_courses_by_depth(
+    courses: list[Course],
+    depths: dict[str, int],
+) -> list[Course]:
+    return sorted(courses, key=lambda course: depths[course.code], reverse=True)
+
+
 def plan_multiple_semesters(
     courses: list[Course],
     completed: set[str],

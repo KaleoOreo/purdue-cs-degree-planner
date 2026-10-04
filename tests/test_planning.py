@@ -9,6 +9,7 @@ from degree_planner.planning import (
     find_available_courses,
     plan_multiple_semesters,
     plan_next_semester,
+    prioritize_courses_by_depth,
     topological_sort,
 )
 
@@ -26,6 +27,19 @@ def test_calculate_dependency_depths_uses_longest_branch():
     assert calculate_dependency_depths(courses) == {
         "A": 3, "B": 1, "C": 2, "D": 0, "E": 1, "F": 0,
     }
+
+
+def test_prioritize_courses_by_depth_places_deeper_courses_first():
+    courses = [
+        Course("B", "Course B", 3, "core"),
+        Course("A", "Course A", 3, "core"),
+        Course("C", "Course C", 3, "core"),
+    ]
+    depths = {"A": 2, "B": 0, "C": 1}
+
+    prioritized = prioritize_courses_by_depth(courses, depths)
+
+    assert [course.code for course in prioritized] == ["A", "C", "B"]
 
 
 def test_find_available_courses_excludes_locked_courses():
