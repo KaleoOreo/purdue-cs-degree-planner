@@ -42,6 +42,22 @@ def test_prioritize_courses_by_depth_places_deeper_courses_first():
     assert [course.code for course in prioritized] == ["A", "C", "B"]
 
 
+def test_plan_multiple_semesters_prioritizes_long_dependency_chain():
+    courses = [
+        Course("A", "Course A", 3, "core"),
+        Course("B", "Course B", 3, "core"),
+        Course("C", "Course C", 3, "core", ["A"]),
+        Course("D", "Course D", 3, "core", ["C"]),
+        Course("E", "Course E", 3, "core"),
+    ]
+
+    plan = plan_multiple_semesters(courses, completed=set(), max_credits=6)
+
+    assert [[course.code for course in semester] for semester in plan] == [
+        ["A", "E"], ["C", "B"], ["D"],
+    ]
+
+
 def test_find_available_courses_excludes_locked_courses():
     courses = [
         Course("CS 18000", "Problem Solving", 4, "core"),

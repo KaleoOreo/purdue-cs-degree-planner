@@ -125,6 +125,7 @@ def plan_multiple_semesters(
         raise ValueError("max_credits must be greater than 0")
 
     order = topological_sort(courses, completed)
+    depths = calculate_dependency_depths(courses)
     planned_completed = completed.copy()
     semesters: list[list[Course]] = []
 
@@ -138,7 +139,8 @@ def plan_multiple_semesters(
 
     while remaining:
         available = find_available_courses(remaining, planned_completed)
-        semester = build_semester_plan(available, max_credits)
+        prioritized = prioritize_courses_by_depth(available, depths)
+        semester = build_semester_plan(prioritized, max_credits)
 
         if not semester:
             raise ValueError("Cannot schedule remaining courses within the credit limit")
