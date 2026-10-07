@@ -116,6 +116,28 @@ def prioritize_courses_by_depth(
     return sorted(courses, key=lambda course: depths[course.code], reverse=True)
 
 
+def find_valid_semester_combinations(
+    courses: list[Course],
+    max_credits: int,
+) -> list[list[Course]]:
+    combinations: list[list[Course]] = []
+
+    def search(index: int, current: list[Course], total_credits: int) -> None:
+        if index == len(courses):
+            if current:
+                combinations.append(current.copy())
+            return
+        search(index + 1, current, total_credits)
+        course = courses[index]
+        if total_credits + course.credits <= max_credits:
+            current.append(course)
+            search(index + 1, current, total_credits + course.credits)
+            current.pop()
+
+    search(0, [], 0)
+    return combinations
+
+
 def plan_multiple_semesters(
     courses: list[Course],
     completed: set[str],

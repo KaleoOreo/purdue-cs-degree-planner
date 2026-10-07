@@ -7,6 +7,7 @@ from degree_planner.planning import (
     calculate_dependency_depths,
     count_unfinished_prerequisites,
     find_available_courses,
+    find_valid_semester_combinations,
     plan_multiple_semesters,
     plan_next_semester,
     prioritize_courses_by_depth,
@@ -40,6 +41,27 @@ def test_prioritize_courses_by_depth_places_deeper_courses_first():
     prioritized = prioritize_courses_by_depth(courses, depths)
 
     assert [course.code for course in prioritized] == ["A", "C", "B"]
+
+
+def test_find_valid_semester_combinations_respects_credit_limit():
+    courses = [
+        Course("A", "Course A", 4, "core"),
+        Course("B", "Course B", 1, "core"),
+        Course("C", "Course C", 2, "core"),
+        Course("E", "Course E", 5, "core"),
+    ]
+
+    combinations = find_valid_semester_combinations(courses, max_credits=6)
+    codes = {
+        frozenset(course.code for course in combination)
+        for combination in combinations
+    }
+
+    assert codes == {
+        frozenset({"A"}), frozenset({"B"}), frozenset({"C"}), frozenset({"E"}),
+        frozenset({"A", "B"}), frozenset({"A", "C"}),
+        frozenset({"B", "C"}), frozenset({"B", "E"}),
+    }
 
 
 def test_plan_multiple_semesters_prioritizes_long_dependency_chain():
