@@ -58,6 +58,24 @@ def test_plan_multiple_semesters_prioritizes_long_dependency_chain():
     ]
 
 
+def test_depth_priority_respects_already_completed_courses():
+    courses = [
+        Course("A", "Course A", 3, "core"),
+        Course("B", "Course B", 3, "core"),
+        Course("C", "Course C", 3, "core", ["A"]),
+        Course("D", "Course D", 3, "core", ["C"]),
+        Course("E", "Course E", 3, "core"),
+    ]
+    completed = {"A"}
+
+    plan = plan_multiple_semesters(courses, completed, max_credits=6)
+
+    assert [[course.code for course in semester] for semester in plan] == [
+        ["C", "E"], ["D", "B"],
+    ]
+    assert completed == {"A"}
+
+
 def test_find_available_courses_excludes_locked_courses():
     courses = [
         Course("CS 18000", "Problem Solving", 4, "core"),
