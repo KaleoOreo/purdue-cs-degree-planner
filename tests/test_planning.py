@@ -5,6 +5,7 @@ from degree_planner.planning import (
     build_dependents,
     build_semester_plan,
     calculate_dependency_depths,
+    choose_best_semester_combination,
     count_unfinished_prerequisites,
     find_available_courses,
     find_valid_semester_combinations,
@@ -62,6 +63,21 @@ def test_find_valid_semester_combinations_respects_credit_limit():
         frozenset({"A", "B"}), frozenset({"A", "C"}),
         frozenset({"B", "C"}), frozenset({"B", "E"}),
     }
+
+
+def test_choose_best_combination_balances_depth_and_credits():
+    courses = [
+        Course("A", "Course A", 4, "core"),
+        Course("B", "Course B", 1, "core"),
+        Course("C", "Course C", 2, "core"),
+        Course("E", "Course E", 5, "core"),
+    ]
+    combinations = find_valid_semester_combinations(courses, max_credits=6)
+    depths = {"A": 3, "B": 2, "C": 1, "E": 0}
+
+    best = choose_best_semester_combination(combinations, depths)
+
+    assert [course.code for course in best] == ["A", "C"]
 
 
 def test_plan_multiple_semesters_prioritizes_long_dependency_chain():

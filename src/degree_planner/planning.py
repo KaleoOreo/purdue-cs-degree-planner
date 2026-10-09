@@ -138,6 +138,20 @@ def find_valid_semester_combinations(
     return combinations
 
 
+def choose_best_semester_combination(
+    combinations: list[list[Course]],
+    depths: dict[str, int],
+) -> list[Course]:
+    def score(combination: list[Course]) -> tuple[int, int, int]:
+        return (
+            max(depths[course.code] for course in combination),
+            sum(course.credits for course in combination),
+            sum(depths[course.code] for course in combination),
+        )
+
+    return max(combinations, key=score, default=[])
+
+
 def plan_multiple_semesters(
     courses: list[Course],
     completed: set[str],
