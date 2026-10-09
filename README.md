@@ -40,10 +40,20 @@ An empty plan displays `No remaining courses to plan`. Invalid prerequisite
 graphs, nonpositive credit limits, and courses that cannot fit within the credit
 limit produce an error message.
 
-The planner assumes full-semester courses and uses greedy selection in
-topological order. It does not guarantee the fewest semesters or account for
-term-specific course offerings. The sample CSV is test data, not a complete
-Purdue catalog, and `plan-all` does not evaluate degree requirements.
+The planner assumes full-semester courses. `plan` uses greedy selection in
+catalog order. For each semester, `plan-all` finds the available courses,
+generates every nonempty combination within the credit limit, and ranks those
+combinations in order by greatest dependency depth, total credits, and combined
+depth. Completely tied combinations are resolved by their alphabetically sorted
+course-code tuples so the result is repeatable.
+
+This ranking prioritizes courses that unlock longer prerequisite chains while
+making good use of the credit limit. It is a local semester-by-semester
+heuristic, so it does not guarantee the fewest semesters. Generating every
+combination can also become expensive when many courses are available at once.
+The planner does not account for term-specific course offerings. The sample CSV
+is test data, not a complete Purdue catalog, and `plan-all` does not evaluate
+degree requirements.
 
 ## Curriculum Progress
 
