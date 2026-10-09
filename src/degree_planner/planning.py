@@ -175,8 +175,8 @@ def plan_multiple_semesters(
 
     while remaining:
         available = find_available_courses(remaining, planned_completed)
-        prioritized = prioritize_courses_by_depth(available, depths)
-        semester = build_semester_plan(prioritized, max_credits)
+        combinations = find_valid_semester_combinations(available, max_credits)
+        semester = choose_best_semester_combination(combinations, depths)
 
         if not semester:
             raise ValueError("Cannot schedule remaining courses within the credit limit")

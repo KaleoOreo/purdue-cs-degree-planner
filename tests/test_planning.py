@@ -91,9 +91,34 @@ def test_plan_multiple_semesters_prioritizes_long_dependency_chain():
 
     plan = plan_multiple_semesters(courses, completed=set(), max_credits=6)
 
-    assert [[course.code for course in semester] for semester in plan] == [
-        ["A", "E"], ["C", "B"], ["D"],
+    semester_by_course = {
+        course.code: index
+        for index, semester in enumerate(plan)
+        for course in semester
+    }
+    assert len(plan) == 3
+    assert semester_by_course["A"] == 0
+    assert semester_by_course["C"] == 1
+    assert semester_by_course["D"] == 2
+
+
+def test_plan_multiple_semesters_selects_best_credit_combination():
+    courses = [
+        Course("E", "Course E", 5, "core"),
+        Course("C", "Course C", 2, "core"),
+        Course("B", "Course B", 1, "core"),
+        Course("A", "Course A", 4, "core"),
+        Course("A1", "Course A1", 3, "core", ["A"]),
+        Course("A2", "Course A2", 3, "core", ["A1"]),
+        Course("A3", "Course A3", 3, "core", ["A2"]),
+        Course("B1", "Course B1", 3, "core", ["B"]),
+        Course("B2", "Course B2", 3, "core", ["B1"]),
+        Course("C1", "Course C1", 3, "core", ["C"]),
     ]
+
+    plan = plan_multiple_semesters(courses, completed=set(), max_credits=6)
+
+    assert [course.code for course in plan[0]] == ["A", "C"]
 
 
 def test_depth_priority_respects_already_completed_courses():
@@ -108,9 +133,14 @@ def test_depth_priority_respects_already_completed_courses():
 
     plan = plan_multiple_semesters(courses, completed, max_credits=6)
 
-    assert [[course.code for course in semester] for semester in plan] == [
-        ["C", "E"], ["D", "B"],
-    ]
+    semester_by_course = {
+        course.code: index
+        for index, semester in enumerate(plan)
+        for course in semester
+    }
+    assert len(plan) == 2
+    assert set(semester_by_course) == {"B", "C", "D", "E"}
+    assert semester_by_course["C"] < semester_by_course["D"]
     assert completed == {"A"}
 
 
