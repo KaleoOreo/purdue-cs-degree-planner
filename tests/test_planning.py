@@ -80,6 +80,25 @@ def test_choose_best_combination_balances_depth_and_credits():
     assert [course.code for course in best] == ["A", "C"]
 
 
+def test_choose_best_combination_breaks_ties_by_course_code():
+    course_b = Course("B", "Course B", 3, "core")
+    course_c = Course("C", "Course C", 3, "core")
+    course_e = Course("E", "Course E", 3, "core")
+    combination_one = [course_c, course_e]
+    combination_two = [course_c, course_b]
+    depths = {"B": 0, "C": 1, "E": 0}
+
+    forward = choose_best_semester_combination(
+        [combination_one, combination_two], depths
+    )
+    reversed_order = choose_best_semester_combination(
+        [combination_two, combination_one], depths
+    )
+
+    assert {course.code for course in forward} == {"B", "C"}
+    assert {course.code for course in reversed_order} == {"B", "C"}
+
+
 def test_plan_multiple_semesters_prioritizes_long_dependency_chain():
     courses = [
         Course("A", "Course A", 3, "core"),

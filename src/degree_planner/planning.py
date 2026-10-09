@@ -149,7 +149,17 @@ def choose_best_semester_combination(
             sum(depths[course.code] for course in combination),
         )
 
-    return max(combinations, key=score, default=[])
+    if not combinations:
+        return []
+
+    best_score = max(score(combination) for combination in combinations)
+    tied_combinations = [
+        combination for combination in combinations if score(combination) == best_score
+    ]
+    return min(
+        tied_combinations,
+        key=lambda combination: tuple(sorted(course.code for course in combination)),
+    )
 
 
 def plan_multiple_semesters(
