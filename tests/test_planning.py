@@ -99,6 +99,12 @@ def test_choose_best_combination_breaks_ties_by_course_code():
     assert {course.code for course in reversed_order} == {"B", "C"}
 
 
+def test_choose_best_combination_returns_empty_when_none_exist():
+    best = choose_best_semester_combination([], depths={})
+
+    assert best == []
+
+
 def test_plan_multiple_semesters_prioritizes_long_dependency_chain():
     courses = [
         Course("A", "Course A", 3, "core"),
