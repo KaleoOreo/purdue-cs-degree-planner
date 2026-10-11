@@ -6,6 +6,12 @@ dependencies = [
     "fastapi[standard]>=0.143,<0.144",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "httpx2>=2.13,<2.14",
+    "pytest>=9,<10",
+]
+
 [project.scripts]
 degree-planner = "degree_planner.cli:cli_entry"
 
