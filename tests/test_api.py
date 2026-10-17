@@ -147,3 +147,25 @@ def test_plan_endpoint_rejects_invalid_max_credits(
     response = client.get(f"/plan?max_credits={max_credits}")
 
     assert response.status_code == 422
+
+
+def test_full_plan_endpoint_returns_multiple_semesters(tmp_path, monkeypatch):
+    database_path = str(tmp_path / "planner.db")
+    connection = connect_database(database_path)
+    try:
+        save_course(connection, Course("CS 18000", "Problem Solving", 4, "core"))
+        save_course(
+            connection,
+            Course("CS 18200", "Foundations", 3, "core", ["CS 18000"]),
+        )
+    finally:
+        connection.close()
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+
+    response = client.get("/plan/all?max_credits=7")
+
+    assert response.status_code == 200
+    assert [
+        [course["code"] for course in semester]
+        for semester in response.json()
+    ] == [["CS 18000"], ["CS 18200"]]

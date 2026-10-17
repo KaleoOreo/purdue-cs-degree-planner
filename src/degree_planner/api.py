@@ -13,6 +13,7 @@ from degree_planner.models import Course
 from degree_planner.schemas import CourseCompletionRequest, CourseResponse
 from degree_planner.services import (
     mark_course_completed_from_database,
+    plan_multiple_semesters_from_database,
     plan_next_semester_from_database,
 )
 
@@ -62,6 +63,14 @@ def get_next_semester_plan(
     connection: sqlite3.Connection = Depends(get_database),
 ) -> list[Course]:
     return plan_next_semester_from_database(connection, max_credits)
+
+
+@app.get("/plan/all", response_model=list[list[CourseResponse]])
+def get_full_plan(
+    max_credits: int = Query(default=15, gt=0),
+    connection: sqlite3.Connection = Depends(get_database),
+) -> list[list[Course]]:
+    return plan_multiple_semesters_from_database(connection, max_credits)
 
 
 @app.get("/health")
