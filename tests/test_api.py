@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import pytest
 
 import degree_planner.api as api_module
 from degree_planner.database import (
@@ -90,6 +91,27 @@ def test_complete_course_endpoint_rejects_unknown_course(tmp_path, monkeypatch):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Course not found: CS 99999"}
+    connection = connect_database(database_path)
+    try:
+        assert load_completed_courses(connection) == set()
+    finally:
+        connection.close()
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        pytest.param({}, id="missing-course-code"),
+        pytest.param({"course_code": 18000}, id="non-string-course-code"),
+    ],
+)
+def test_complete_course_endpoint_rejects_invalid_body(body, tmp_path, monkeypatch):
+    database_path = str(tmp_path / "planner.db")
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+
+    response = client.post("/completed", json=body)
+
+    assert response.status_code == 422
     connection = connect_database(database_path)
     try:
         assert load_completed_courses(connection) == set()
