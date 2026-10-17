@@ -65,6 +65,11 @@ def test_completed_endpoint_returns_completed_course_codes(tmp_path, monkeypatch
 
 def test_complete_course_endpoint_stores_course_code(tmp_path, monkeypatch):
     database_path = str(tmp_path / "planner.db")
+    connection = connect_database(database_path)
+    try:
+        save_course(connection, Course("CS 18000", "Problem Solving", 4, "core"))
+    finally:
+        connection.close()
     monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
 
     response = client.post("/completed", json={"course_code": "CS 18000"})
@@ -73,5 +78,20 @@ def test_complete_course_endpoint_stores_course_code(tmp_path, monkeypatch):
     connection = connect_database(database_path)
     try:
         assert load_completed_courses(connection) == {"CS 18000"}
+    finally:
+        connection.close()
+
+
+def test_complete_course_endpoint_rejects_unknown_course(tmp_path, monkeypatch):
+    database_path = str(tmp_path / "planner.db")
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+
+    response = client.post("/completed", json={"course_code": "CS 99999"})
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Course not found: CS 99999"}
+    connection = connect_database(database_path)
+    try:
+        assert load_completed_courses(connection) == set()
     finally:
         connection.close()

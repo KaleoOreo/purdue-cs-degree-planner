@@ -1,16 +1,17 @@
 import sqlite3
 from collections.abc import Iterator
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 
 from degree_planner.database import (
     connect_database,
     load_completed_courses,
     load_courses,
-    mark_completed,
 )
+from degree_planner.exceptions import CourseNotFoundError
 from degree_planner.models import Course
 from degree_planner.schemas import CourseCompletionRequest, CourseResponse
+from degree_planner.services import mark_course_completed_from_database
 
 
 DATABASE_PATH = "data/planner.db"
@@ -46,7 +47,10 @@ def complete_course(
     request: CourseCompletionRequest,
     connection: sqlite3.Connection = Depends(get_database),
 ) -> None:
-    mark_completed(connection, request.course_code)
+    try:
+        mark_course_completed_from_database(connection, request.course_code)
+    except CourseNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @app.get("/health")
