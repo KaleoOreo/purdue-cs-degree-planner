@@ -117,3 +117,19 @@ def test_complete_course_endpoint_rejects_invalid_body(body, tmp_path, monkeypat
         assert load_completed_courses(connection) == set()
     finally:
         connection.close()
+
+
+def test_plan_endpoint_uses_max_credits_query(tmp_path, monkeypatch):
+    database_path = str(tmp_path / "planner.db")
+    connection = connect_database(database_path)
+    try:
+        save_course(connection, Course("CS 18000", "Problem Solving", 4, "core"))
+        save_course(connection, Course("CS 24000", "Programming in C", 3, "core"))
+    finally:
+        connection.close()
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+
+    response = client.get("/plan?max_credits=3")
+
+    assert response.status_code == 200
+    assert [course["code"] for course in response.json()] == ["CS 24000"]

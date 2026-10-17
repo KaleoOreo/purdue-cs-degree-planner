@@ -11,7 +11,10 @@ from degree_planner.database import (
 from degree_planner.exceptions import CourseNotFoundError
 from degree_planner.models import Course
 from degree_planner.schemas import CourseCompletionRequest, CourseResponse
-from degree_planner.services import mark_course_completed_from_database
+from degree_planner.services import (
+    mark_course_completed_from_database,
+    plan_next_semester_from_database,
+)
 
 
 DATABASE_PATH = "data/planner.db"
@@ -51,6 +54,14 @@ def complete_course(
         mark_course_completed_from_database(connection, request.course_code)
     except CourseNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@app.get("/plan", response_model=list[CourseResponse])
+def get_next_semester_plan(
+    max_credits: int = 15,
+    connection: sqlite3.Connection = Depends(get_database),
+) -> list[Course]:
+    return plan_next_semester_from_database(connection, max_credits)
 
 
 @app.get("/health")
