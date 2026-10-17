@@ -133,3 +133,17 @@ def test_plan_endpoint_uses_max_credits_query(tmp_path, monkeypatch):
 
     assert response.status_code == 200
     assert [course["code"] for course in response.json()] == ["CS 24000"]
+
+
+@pytest.mark.parametrize("max_credits", ["abc", "0", "-1"])
+def test_plan_endpoint_rejects_invalid_max_credits(
+    max_credits,
+    tmp_path,
+    monkeypatch,
+):
+    database_path = str(tmp_path / "planner.db")
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+
+    response = client.get(f"/plan?max_credits={max_credits}")
+
+    assert response.status_code == 422

@@ -1,7 +1,7 @@
 import sqlite3
 from collections.abc import Iterator
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Query
 
 from degree_planner.database import (
     connect_database,
@@ -58,7 +58,7 @@ def complete_course(
 
 @app.get("/plan", response_model=list[CourseResponse])
 def get_next_semester_plan(
-    max_credits: int = 15,
+    max_credits: int = Query(default=15, gt=0),
     connection: sqlite3.Connection = Depends(get_database),
 ) -> list[Course]:
     return plan_next_semester_from_database(connection, max_credits)
