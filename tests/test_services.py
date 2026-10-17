@@ -2,7 +2,13 @@ import sqlite3
 
 import pytest
 
-from degree_planner.database import initialize_database, mark_completed, save_course
+from degree_planner.database import (
+    initialize_database,
+    load_completed_courses,
+    mark_completed,
+    save_course,
+)
+from degree_planner.exceptions import CourseNotFoundError
 from degree_planner.models import Course
 from degree_planner.requirements import CourseChoiceGroup, Curriculum, RequiredCourseGroup
 from degree_planner.services import (
@@ -12,7 +18,32 @@ from degree_planner.services import (
     find_remaining_choice_options_from_database,
     plan_multiple_semesters_from_database,
     plan_next_semester_from_database,
+    mark_course_completed_from_database,
 )
+
+
+def test_mark_course_completed_from_database_stores_catalog_course():
+    connection = sqlite3.connect(":memory:")
+    initialize_database(connection)
+    try:
+        save_course(connection, Course("CS 18000", "Problem Solving", 4, "core"))
+
+        mark_course_completed_from_database(connection, "CS 18000")
+
+        assert load_completed_courses(connection) == {"CS 18000"}
+    finally:
+        connection.close()
+
+
+def test_mark_course_completed_from_database_rejects_unknown_course():
+    connection = sqlite3.connect(":memory:")
+    initialize_database(connection)
+    try:
+        with pytest.raises(CourseNotFoundError, match="Course not found: CS 99999"):
+            mark_course_completed_from_database(connection, "CS 99999")
+        assert load_completed_courses(connection) == set()
+    finally:
+        connection.close()
 
 
 def test_curriculum_progress_uses_saved_completions():
