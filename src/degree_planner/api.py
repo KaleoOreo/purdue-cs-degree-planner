@@ -3,9 +3,14 @@ from collections.abc import Iterator
 
 from fastapi import Depends, FastAPI
 
-from degree_planner.database import connect_database, load_completed_courses, load_courses
+from degree_planner.database import (
+    connect_database,
+    load_completed_courses,
+    load_courses,
+    mark_completed,
+)
 from degree_planner.models import Course
-from degree_planner.schemas import CourseResponse
+from degree_planner.schemas import CourseCompletionRequest, CourseResponse
 
 
 DATABASE_PATH = "data/planner.db"
@@ -34,6 +39,14 @@ def get_completed_courses(
     connection: sqlite3.Connection = Depends(get_database),
 ) -> list[str]:
     return sorted(load_completed_courses(connection))
+
+
+@app.post("/completed", status_code=204)
+def complete_course(
+    request: CourseCompletionRequest,
+    connection: sqlite3.Connection = Depends(get_database),
+) -> None:
+    mark_completed(connection, request.course_code)
 
 
 @app.get("/health")

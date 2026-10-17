@@ -1,7 +1,12 @@
 from fastapi.testclient import TestClient
 
 import degree_planner.api as api_module
-from degree_planner.database import connect_database, mark_completed, save_course
+from degree_planner.database import (
+    connect_database,
+    load_completed_courses,
+    mark_completed,
+    save_course,
+)
 from degree_planner.models import Course
 
 
@@ -56,3 +61,17 @@ def test_completed_endpoint_returns_completed_course_codes(tmp_path, monkeypatch
 
     assert response.status_code == 200
     assert response.json() == ["CS 18000", "CS 18200"]
+
+
+def test_complete_course_endpoint_stores_course_code(tmp_path, monkeypatch):
+    database_path = str(tmp_path / "planner.db")
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+
+    response = client.post("/completed", json={"course_code": "CS 18000"})
+
+    assert response.status_code == 204
+    connection = connect_database(database_path)
+    try:
+        assert load_completed_courses(connection) == {"CS 18000"}
+    finally:
+        connection.close()
