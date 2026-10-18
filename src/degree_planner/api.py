@@ -10,12 +10,18 @@ from degree_planner.database import (
 )
 from degree_planner.exceptions import CourseNotFoundError
 from degree_planner.models import Course
-from degree_planner.schemas import CourseCompletionRequest, CourseResponse
+from degree_planner.schemas import (
+    CourseCompletionRequest,
+    CourseResponse,
+    MissingPrerequisiteResponse,
+    ValidationResponse,
+)
 from degree_planner.services import (
     mark_course_completed_from_database,
     plan_multiple_semesters_from_database,
     plan_next_semester_from_database,
 )
+from degree_planner.validation import validate_course_graph
 
 
 DATABASE_PATH = "data/planner.db"
@@ -71,6 +77,25 @@ def get_full_plan(
     connection: sqlite3.Connection = Depends(get_database),
 ) -> list[list[Course]]:
     return plan_multiple_semesters_from_database(connection, max_credits)
+
+
+@app.get("/validation", response_model=ValidationResponse)
+def get_validation(
+    connection: sqlite3.Connection = Depends(get_database),
+) -> ValidationResponse:
+    result = validate_course_graph(load_courses(connection))
+    missing_prerequisites = [
+        MissingPrerequisiteResponse(
+            course_code=course_code,
+            prerequisite_code=prerequisite_code,
+        )
+        for course_code, prerequisite_code in result.missing_prerequisites
+    ]
+    return ValidationResponse(
+        is_valid=result.is_valid,
+        missing_prerequisites=missing_prerequisites,
+        cycle_path=result.cycle_path,
+    )
 
 
 @app.get("/health")

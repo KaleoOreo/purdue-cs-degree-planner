@@ -169,3 +169,79 @@ def test_full_plan_endpoint_returns_multiple_semesters(tmp_path, monkeypatch):
         [course["code"] for course in semester]
         for semester in response.json()
     ] == [["CS 18000"], ["CS 18200"]]
+
+
+def test_validation_endpoint_reports_missing_prerequisite(tmp_path, monkeypatch):
+    database_path = str(tmp_path / "planner.db")
+    connection = connect_database(database_path)
+    try:
+        save_course(
+            connection,
+            Course("CS 18200", "Foundations", 3, "core", ["CS 18000"]),
+        )
+    finally:
+        connection.close()
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+
+    response = client.get("/validation")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "is_valid": False,
+        "missing_prerequisites": [
+            {
+                "course_code": "CS 18200",
+                "prerequisite_code": "CS 18000",
+            }
+        ],
+        "cycle_path": [],
+    }
+
+
+def test_validation_endpoint_reports_valid_graph(tmp_path, monkeypatch):
+    database_path = str(tmp_path / "planner.db")
+    connection = connect_database(database_path)
+    try:
+        save_course(connection, Course("CS 18000", "Problem Solving", 4, "core"))
+        save_course(
+            connection,
+            Course("CS 18200", "Foundations", 3, "core", ["CS 18000"]),
+        )
+    finally:
+        connection.close()
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+
+    response = client.get("/validation")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "is_valid": True,
+        "missing_prerequisites": [],
+        "cycle_path": [],
+    }
+
+
+def test_validation_endpoint_reports_cycle_path(tmp_path, monkeypatch):
+    database_path = str(tmp_path / "planner.db")
+    connection = connect_database(database_path)
+    try:
+        save_course(
+            connection,
+            Course("CS 20000", "Course A", 3, "core", ["CS 25000"]),
+        )
+        save_course(
+            connection,
+            Course("CS 25000", "Course B", 3, "core", ["CS 20000"]),
+        )
+    finally:
+        connection.close()
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+
+    response = client.get("/validation")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "is_valid": False,
+        "missing_prerequisites": [],
+        "cycle_path": ["CS 20000", "CS 25000", "CS 20000"],
+    }
