@@ -86,6 +86,37 @@ Non-CS degree requirements, minimum grades, approved senior-project
 substitutions, course offerings, and a full 2026 catalog audit are not yet
 modeled.
 
+## API
+
+Start the FastAPI server from the repository root:
+
+```powershell
+python -m uvicorn degree_planner.api:app --reload
+```
+
+Open `http://127.0.0.1:8000/docs` for FastAPI's interactive API documentation.
+The API uses `data/planner.db` and `data/purdue_software_engineering.json` by
+default.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Check whether the API is running. |
+| `GET` | `/courses` | List stored courses. |
+| `GET` | `/completed` | List completed course codes. |
+| `POST` | `/completed` | Mark a course as completed. |
+| `GET` | `/plan` | Build one semester with an optional `max_credits` query. |
+| `GET` | `/plan/all` | Build a multi-semester plan. |
+| `GET` | `/validation` | Validate prerequisite references and cycles. |
+| `GET` | `/progress` | Report Purdue Software Engineering curriculum progress. |
+
+Example PowerShell requests:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8000/courses
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/completed `
+    -ContentType "application/json" -Body '{"course_code":"CS 18000"}'
+```
+
 ## Run Tests
 
 ```powershell
