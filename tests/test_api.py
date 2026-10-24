@@ -9,6 +9,15 @@ from degree_planner.database import (
     save_course,
 )
 from degree_planner.models import Course
+from degree_planner.requirements import (
+    CourseChoiceGroup,
+    CourseOption,
+    CourseOptionGroup,
+    Curriculum,
+    CurriculumProgress,
+    RequirementAllocation,
+    RequiredCourseGroup,
+)
 
 
 client = TestClient(api_module.app)
@@ -16,6 +25,131 @@ client = TestClient(api_module.app)
 
 def test_api_has_project_title():
     assert api_module.app.title == "Purdue CS Degree Planner API"
+
+
+def test_required_group_progress_response_includes_definition_and_progress():
+    group = RequiredCourseGroup(
+        "Computer Science Core",
+        {"CS 18200", "CS 18000"},
+    )
+
+    response = api_module._required_group_progress_response(
+        group,
+        {"CS 18000"},
+    )
+
+    assert response.course_codes == ["CS 18000", "CS 18200"]
+    assert response.missing_course_codes == ["CS 18200"]
+
+
+def test_choice_group_progress_response_includes_definition_and_progress():
+    group = CourseChoiceGroup(
+        "Software Engineering Electives",
+        {"CS 35200", "CS 34800", "CS 30700"},
+        2,
+    )
+
+    response = api_module._choice_group_progress_response(group, {"CS 30700"})
+
+    assert response.required_count == 2
+    assert response.remaining_count == 1
+    assert response.remaining_course_codes == ["CS 34800", "CS 35200"]
+
+
+def test_course_option_response_preserves_paired_course_boundary():
+    option = CourseOption(frozenset({"CS 41100", "CS 31100"}))
+
+    response = api_module._course_option_response(option)
+
+    assert response.course_codes == ["CS 31100", "CS 41100"]
+
+
+def test_option_group_progress_response_preserves_nested_options():
+    group = CourseOptionGroup(
+        "Systems Sequences",
+        [
+            CourseOption(frozenset({"CS 41100", "CS 31100"})),
+            CourseOption(frozenset({"CS 35200"})),
+        ],
+        1,
+    )
+
+    response = api_module._option_group_progress_response(group, {"CS 35200"})
+
+    assert response.remaining_count == 0
+    assert [option.course_codes for option in response.options] == [
+        ["CS 31100", "CS 41100"],
+        ["CS 35200"],
+    ]
+    assert response.remaining_options[0].course_codes == ["CS 31100", "CS 41100"]
+
+
+def test_requirement_allocation_response_identifies_group_and_option():
+    allocation = RequirementAllocation(
+        "Systems Sequences",
+        CourseOption(frozenset({"CS 41100", "CS 31100"})),
+    )
+
+    response = api_module._requirement_allocation_response(allocation)
+
+    assert response.group_name == "Systems Sequences"
+    assert response.course_codes == ["CS 31100", "CS 41100"]
+
+
+@pytest.mark.parametrize(
+    ("completed", "expected"),
+    [
+        pytest.param({"A"}, None, id="no-complete-allocation"),
+        pytest.param(
+            {"A", "B"},
+            [("Core", ["A"]), ("Elective", ["B"])],
+            id="complete-allocation",
+        ),
+    ],
+)
+def test_requirement_allocation_responses_reports_global_result(completed, expected):
+    curriculum = Curriculum(
+        "Example",
+        [RequiredCourseGroup("Core", {"A"})],
+        [CourseChoiceGroup("Elective", {"A", "B"}, 1)],
+        [],
+    )
+
+    responses = api_module._requirement_allocation_responses(curriculum, completed)
+
+    if responses is None:
+        assert expected is None
+    else:
+        assert [(item.group_name, item.course_codes) for item in responses] == expected
+
+
+def test_curriculum_progress_response_combines_all_group_types():
+    curriculum = Curriculum(
+        "Example Curriculum",
+        [RequiredCourseGroup("Core", {"A"})],
+        [CourseChoiceGroup("Elective", {"B", "C"}, 1)],
+        [CourseOptionGroup(
+            "Sequence",
+            [
+                CourseOption(frozenset({"D", "E"})),
+                CourseOption(frozenset({"F"})),
+            ],
+            1,
+        )],
+    )
+    progress = CurriculumProgress(curriculum, {"E", "D", "B", "A"})
+
+    response = api_module._curriculum_progress_response(progress)
+
+    assert response.is_complete is True
+    assert response.completed_course_codes == ["A", "B", "D", "E"]
+    assert [group.name for group in response.required_groups] == ["Core"]
+    assert [group.name for group in response.choice_groups] == ["Elective"]
+    assert [group.name for group in response.option_groups] == ["Sequence"]
+    assert response.allocations is not None
+    assert [item.group_name for item in response.allocations] == [
+        "Core", "Elective", "Sequence"
+    ]
 
 
 def test_health_endpoint():
