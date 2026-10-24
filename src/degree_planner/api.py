@@ -8,7 +8,7 @@ from degree_planner.database import (
     load_completed_courses,
     load_courses,
 )
-from degree_planner.exceptions import CourseNotFoundError
+from degree_planner.exceptions import CourseNotFoundError, RequirementsLoadError
 from degree_planner.importers import load_curriculum
 from degree_planner.models import Course
 from degree_planner.requirements import (
@@ -213,7 +213,15 @@ def get_validation(
 def get_curriculum_progress(
     connection: sqlite3.Connection = Depends(get_database),
 ) -> CurriculumProgressResponse:
-    curriculum = load_curriculum(CURRICULUM_PATH)
+    try:
+        curriculum = load_curriculum(CURRICULUM_PATH)
+    except FileNotFoundError as error:
+        raise HTTPException(
+            status_code=404,
+            detail="Curriculum file not found",
+        ) from error
+    except RequirementsLoadError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
     progress = find_curriculum_progress_from_database(connection, curriculum)
     return _curriculum_progress_response(progress)
 

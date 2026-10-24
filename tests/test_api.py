@@ -409,3 +409,34 @@ def test_progress_endpoint_combines_curriculum_and_completed_courses(
     assert response.json()["allocations"] == [
         {"group_name": "Core", "course_codes": ["A"]}
     ]
+
+
+@pytest.mark.parametrize(
+    ("contents", "expected_status", "expected_detail"),
+    [
+        pytest.param(None, 404, "Curriculum file not found", id="missing-file"),
+        pytest.param(
+            "{}",
+            422,
+            "Missing required field: name",
+            id="invalid-curriculum",
+        ),
+    ],
+)
+def test_progress_endpoint_reports_curriculum_load_error(
+    contents,
+    expected_status,
+    expected_detail,
+    tmp_path,
+    monkeypatch,
+):
+    curriculum_path = tmp_path / "curriculum.json"
+    if contents is not None:
+        curriculum_path.write_text(contents, encoding="utf-8")
+    monkeypatch.setattr(api_module, "DATABASE_PATH", str(tmp_path / "planner.db"))
+    monkeypatch.setattr(api_module, "CURRICULUM_PATH", str(curriculum_path))
+
+    response = client.get("/progress")
+
+    assert response.status_code == expected_status
+    assert response.json() == {"detail": expected_detail}
