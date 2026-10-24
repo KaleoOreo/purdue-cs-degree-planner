@@ -9,6 +9,7 @@ from degree_planner.database import (
     load_courses,
 )
 from degree_planner.exceptions import CourseNotFoundError
+from degree_planner.importers import load_curriculum
 from degree_planner.models import Course
 from degree_planner.requirements import (
     CourseChoiceGroup,
@@ -32,6 +33,7 @@ from degree_planner.schemas import (
     ValidationResponse,
 )
 from degree_planner.services import (
+    find_curriculum_progress_from_database,
     mark_course_completed_from_database,
     plan_multiple_semesters_from_database,
     plan_next_semester_from_database,
@@ -40,6 +42,7 @@ from degree_planner.validation import validate_course_graph
 
 
 DATABASE_PATH = "data/planner.db"
+CURRICULUM_PATH = "data/purdue_software_engineering.json"
 
 
 app = FastAPI(title="Purdue CS Degree Planner API")
@@ -204,6 +207,15 @@ def get_validation(
         missing_prerequisites=missing_prerequisites,
         cycle_path=result.cycle_path,
     )
+
+
+@app.get("/progress", response_model=CurriculumProgressResponse)
+def get_curriculum_progress(
+    connection: sqlite3.Connection = Depends(get_database),
+) -> CurriculumProgressResponse:
+    curriculum = load_curriculum(CURRICULUM_PATH)
+    progress = find_curriculum_progress_from_database(connection, curriculum)
+    return _curriculum_progress_response(progress)
 
 
 @app.get("/health")

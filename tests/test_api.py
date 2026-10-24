@@ -379,3 +379,33 @@ def test_validation_endpoint_reports_cycle_path(tmp_path, monkeypatch):
         "missing_prerequisites": [],
         "cycle_path": ["CS 20000", "CS 25000", "CS 20000"],
     }
+
+
+def test_progress_endpoint_combines_curriculum_and_completed_courses(
+    tmp_path,
+    monkeypatch,
+):
+    curriculum_path = tmp_path / "curriculum.json"
+    curriculum_path.write_text(
+        '{"name": "Example", "required_groups": '
+        '[{"name": "Core", "course_codes": ["A"]}], '
+        '"choice_groups": [], "option_groups": []}',
+        encoding="utf-8",
+    )
+    database_path = str(tmp_path / "planner.db")
+    connection = connect_database(database_path)
+    try:
+        mark_completed(connection, "A")
+    finally:
+        connection.close()
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+    monkeypatch.setattr(api_module, "CURRICULUM_PATH", str(curriculum_path))
+
+    response = client.get("/progress")
+
+    assert response.status_code == 200
+    assert response.json()["is_complete"] is True
+    assert response.json()["completed_course_codes"] == ["A"]
+    assert response.json()["allocations"] == [
+        {"group_name": "Core", "course_codes": ["A"]}
+    ]
