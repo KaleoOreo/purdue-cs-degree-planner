@@ -167,6 +167,20 @@ def test_frontend_endpoint_returns_html():
     assert "<h1>Purdue CS Degree Planner</h1>" in response.text
 
 
+def test_frontend_endpoint_links_stylesheet():
+    response = client.get("/")
+
+    assert 'href="/static/styles.css"' in response.text
+
+
+def test_static_stylesheet_endpoint_returns_css():
+    response = client.get("/static/styles.css")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/css")
+    assert "color: darkblue;" in response.text
+
+
 def test_courses_endpoint_returns_stored_courses(tmp_path, monkeypatch):
     database_path = str(tmp_path / "planner.db")
     connection = connect_database(database_path)
