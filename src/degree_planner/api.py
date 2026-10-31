@@ -1,7 +1,9 @@
 import sqlite3
 from collections.abc import Iterator
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse
 
 from degree_planner.database import (
     connect_database,
@@ -43,6 +45,7 @@ from degree_planner.validation import validate_course_graph
 
 DATABASE_PATH = "data/planner.db"
 CURRICULUM_PATH = "data/purdue_software_engineering.json"
+FRONTEND_PATH = Path(__file__).parent / "static" / "index.html"
 
 
 app = FastAPI(title="Purdue CS Degree Planner API")
@@ -147,6 +150,11 @@ def _curriculum_progress_response(
         ],
         allocations=allocations,
     )
+
+
+@app.get("/")
+def get_frontend() -> FileResponse:
+    return FileResponse(FRONTEND_PATH)
 
 
 @app.get("/courses", response_model=list[CourseResponse])

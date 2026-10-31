@@ -159,6 +159,14 @@ def test_health_endpoint():
     assert response.json() == {"status": "ok"}
 
 
+def test_frontend_endpoint_returns_html():
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert "<h1>Purdue CS Degree Planner</h1>" in response.text
+
+
 def test_courses_endpoint_returns_stored_courses(tmp_path, monkeypatch):
     database_path = str(tmp_path / "planner.db")
     connection = connect_database(database_path)
