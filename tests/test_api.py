@@ -178,6 +178,7 @@ def test_static_stylesheet_endpoint_returns_css():
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/css")
+    assert "font-family: Arial, sans-serif;" in response.text
     assert "color: darkblue;" in response.text
 
 
