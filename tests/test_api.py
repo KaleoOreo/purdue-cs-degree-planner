@@ -180,6 +180,8 @@ def test_static_stylesheet_endpoint_returns_css():
     assert response.headers["content-type"].startswith("text/css")
     assert "font-family: Arial, sans-serif;" in response.text
     assert "padding: 2rem;" in response.text
+    assert "max-width: 60rem;" in response.text
+    assert "margin: 0 auto;" in response.text
     assert "color: darkblue;" in response.text
 
 
