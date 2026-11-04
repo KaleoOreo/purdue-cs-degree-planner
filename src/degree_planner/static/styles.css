@@ -2,6 +2,10 @@ body {
   font-family: Arial, sans-serif;
 }
 
+main {
+  padding: 2rem;
+}
+
 h1 {
   color: darkblue;
 }
