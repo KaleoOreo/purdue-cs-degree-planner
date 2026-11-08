@@ -176,6 +176,8 @@ def test_frontend_endpoint_returns_html():
     assert '<label for="completed-course-code">Course code</label>' in response.text
     assert '<input id="completed-course-code" type="text" placeholder="CS 18000">' in response.text
     assert '<button id="mark-completed" type="button">Mark Completed</button>' in response.text
+    assert '<div id="completed-courses" aria-live="polite">' in response.text
+    assert "No completed courses have been recorded yet." in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
