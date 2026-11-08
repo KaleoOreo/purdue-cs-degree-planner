@@ -190,6 +190,8 @@ def test_frontend_endpoint_returns_html():
     assert '<tbody id="course-catalog-body">' in response.text
     assert '<td colspan="5">' in response.text
     assert "No courses have been loaded yet." in response.text
+    assert "<h2>Multi-Semester Plan</h2>" in response.text
+    assert "Generate a plan for all unfinished courses across future semesters." in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
