@@ -178,6 +178,8 @@ def test_frontend_endpoint_returns_html():
     assert '<button id="mark-completed" type="button">Mark Completed</button>' in response.text
     assert '<div id="completed-courses" aria-live="polite">' in response.text
     assert "No completed courses have been recorded yet." in response.text
+    assert "<h2>Course Catalog</h2>" in response.text
+    assert "Browse all courses stored in the planner." in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
