@@ -195,6 +195,8 @@ def test_frontend_endpoint_returns_html():
     assert '<label for="all-max-credits">Maximum credits per semester</label>' in response.text
     assert '<input id="all-max-credits" type="number" min="1" value="15">' in response.text
     assert '<button id="generate-all-plan" type="button">Generate Full Plan</button>' in response.text
+    assert '<div id="multi-semester-plan" aria-live="polite">' in response.text
+    assert "No multi-semester plan has been generated yet." in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
