@@ -180,6 +180,13 @@ def test_frontend_endpoint_returns_html():
     assert "No completed courses have been recorded yet." in response.text
     assert "<h2>Course Catalog</h2>" in response.text
     assert "Browse all courses stored in the planner." in response.text
+    assert "<table>" in response.text
+    assert "<thead>" in response.text
+    assert '<th scope="col">Code</th>' in response.text
+    assert '<th scope="col">Title</th>' in response.text
+    assert '<th scope="col">Credits</th>' in response.text
+    assert '<th scope="col">Category</th>' in response.text
+    assert '<th scope="col">Prerequisites</th>' in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
