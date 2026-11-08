@@ -187,6 +187,9 @@ def test_frontend_endpoint_returns_html():
     assert '<th scope="col">Credits</th>' in response.text
     assert '<th scope="col">Category</th>' in response.text
     assert '<th scope="col">Prerequisites</th>' in response.text
+    assert '<tbody id="course-catalog-body">' in response.text
+    assert '<td colspan="5">' in response.text
+    assert "No courses have been loaded yet." in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
