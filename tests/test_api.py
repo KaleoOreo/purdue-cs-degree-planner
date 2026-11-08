@@ -171,6 +171,8 @@ def test_frontend_endpoint_returns_html():
     assert '<label for="max-credits">Maximum credits</label>' in response.text
     assert '<input id="max-credits" type="number" min="1" value="15">' in response.text
     assert '<button id="generate-plan" type="button">Generate Plan</button>' in response.text
+    assert "<h2>Completed Courses</h2>" in response.text
+    assert "Track courses you have already completed." in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
