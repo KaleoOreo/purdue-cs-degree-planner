@@ -173,6 +173,8 @@ def test_frontend_endpoint_returns_html():
     assert '<button id="generate-plan" type="button">Generate Plan</button>' in response.text
     assert "<h2>Completed Courses</h2>" in response.text
     assert "Track courses you have already completed." in response.text
+    assert '<label for="completed-course-code">Course code</label>' in response.text
+    assert '<input id="completed-course-code" type="text" placeholder="CS 18000">' in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
