@@ -167,6 +167,8 @@ def test_frontend_endpoint_returns_html():
     assert "<h1>Purdue CS Degree Planner</h1>" in response.text
     assert "<h2>Next Semester</h2>" in response.text
     assert "No semester plan has been generated yet." in response.text
+    assert '<label for="max-credits">Maximum credits</label>' in response.text
+    assert '<input id="max-credits" type="number" min="1" value="15">' in response.text
     assert '<button id="generate-plan" type="button">Generate Plan</button>' in response.text
 
 
