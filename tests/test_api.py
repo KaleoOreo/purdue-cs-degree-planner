@@ -192,6 +192,8 @@ def test_frontend_endpoint_returns_html():
     assert "No courses have been loaded yet." in response.text
     assert "<h2>Multi-Semester Plan</h2>" in response.text
     assert "Generate a plan for all unfinished courses across future semesters." in response.text
+    assert '<label for="all-max-credits">Maximum credits per semester</label>' in response.text
+    assert '<input id="all-max-credits" type="number" min="1" value="15">' in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
