@@ -201,6 +201,10 @@ def test_frontend_endpoint_returns_html():
     assert "Review completed and remaining degree requirements." in response.text
     assert '<div id="curriculum-progress" aria-live="polite">' in response.text
     assert "Curriculum progress has not been loaded yet." in response.text
+    assert "<h2>Course Graph Validation</h2>" in response.text
+    assert "Check whether stored prerequisite relationships are valid." in response.text
+    assert '<div id="course-graph-validation" aria-live="polite">' in response.text
+    assert "Course graph validation has not been loaded yet." in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
