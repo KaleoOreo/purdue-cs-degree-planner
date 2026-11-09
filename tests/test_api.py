@@ -197,6 +197,10 @@ def test_frontend_endpoint_returns_html():
     assert '<button id="generate-all-plan" type="button">Generate Full Plan</button>' in response.text
     assert '<div id="multi-semester-plan" aria-live="polite">' in response.text
     assert "No multi-semester plan has been generated yet." in response.text
+    assert "<h2>Curriculum Progress</h2>" in response.text
+    assert "Review completed and remaining degree requirements." in response.text
+    assert '<div id="curriculum-progress" aria-live="polite">' in response.text
+    assert "Curriculum progress has not been loaded yet." in response.text
 
 
 def test_frontend_endpoint_links_stylesheet():
