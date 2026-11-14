@@ -1,1 +1,2 @@
-// Page interactions will be added one small step at a time.
+const statusElement = document.getElementById("app-status");
+statusElement.textContent = "Planner ready.";
