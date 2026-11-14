@@ -94,9 +94,25 @@ Start the FastAPI server from the repository root:
 python -m uvicorn degree_planner.api:app --reload
 ```
 
-Open `http://127.0.0.1:8000/docs` for FastAPI's interactive API documentation.
+Open `http://127.0.0.1:8000/` for the planner web page, or
+`http://127.0.0.1:8000/docs` for FastAPI's interactive API documentation.
 The API uses `data/planner.db` and `data/purdue_software_engineering.json` by
 default.
+
+The web page loads the catalog, completed courses, curriculum progress, and
+prerequisite validation when it opens. Its buttons generate one or all future
+semesters and record completed courses. After recording a course, generate a
+new plan to use the updated completion record. Plans are previews: generating
+one does not mark courses complete. The catalog is empty until courses are
+imported into `data/planner.db`; for a small demonstration, run:
+
+```powershell
+degree-planner --database data/planner.db import tests/fixtures/courses.csv
+```
+
+This CSV is a learning fixture. The included curriculum JSON describes a
+verified subset of Purdue Software Engineering requirements, while a full
+Purdue course catalog and complete degree audit are still outside this version.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
@@ -121,4 +137,8 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/completed `
 
 ```powershell
 python -m pytest
+node --test tests/test_frontend.cjs
 ```
+
+The JavaScript interaction tests require Node.js. The Python suite can run
+without Node.js.

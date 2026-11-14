@@ -202,7 +202,10 @@ def get_full_plan(
     max_credits: int = Query(default=15, gt=0),
     connection: sqlite3.Connection = Depends(get_database),
 ) -> list[list[Course]]:
-    return plan_multiple_semesters_from_database(connection, max_credits)
+    try:
+        return plan_multiple_semesters_from_database(connection, max_credits)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
 
 
 @app.get("/validation", response_model=ValidationResponse)

@@ -388,6 +388,33 @@ def test_full_plan_endpoint_returns_multiple_semesters(tmp_path, monkeypatch):
     ] == [["CS 18000"], ["CS 18200"]]
 
 
+@pytest.mark.parametrize(
+    ("courses", "expected_detail"),
+    [
+        ([Course("CS 18000", "Problem Solving", 4, "core")],
+         "Cannot schedule remaining courses within the credit limit"),
+        ([Course("CS 18200", "Foundations", 3, "core", ["CS 18000"])],
+         "Cannot sort an invalid course graph"),
+    ],
+)
+def test_full_plan_endpoint_reports_impossible_plan(
+    courses, expected_detail, tmp_path, monkeypatch,
+):
+    database_path = str(tmp_path / "planner.db")
+    connection = connect_database(database_path)
+    try:
+        for course in courses:
+            save_course(connection, course)
+    finally:
+        connection.close()
+    monkeypatch.setattr(api_module, "DATABASE_PATH", database_path)
+
+    response = client.get("/plan/all?max_credits=3")
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == expected_detail
+
+
 def test_validation_endpoint_reports_missing_prerequisite(tmp_path, monkeypatch):
     database_path = str(tmp_path / "planner.db")
     connection = connect_database(database_path)
