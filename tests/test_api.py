@@ -165,6 +165,7 @@ def test_frontend_endpoint_returns_html():
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
     assert "<h1>Purdue CS Degree Planner</h1>" in response.text
+    assert '<div id="app-status" role="status"></div>' in response.text
     assert "<h2>Next Semester</h2>" in response.text
     assert '<div id="semester-plan" aria-live="polite">' in response.text
     assert "No semester plan has been generated yet." in response.text
