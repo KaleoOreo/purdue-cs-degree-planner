@@ -1,0 +1,9 @@
+code,title,credits,category,prerequisites
+MA 16100,Plane Analytic Geometry and Calculus I,5,math,
+CS 19300,Tools,1,tools,
+CS 18000,Problem Solving and Object-Oriented Programming,4,core,
+CS 18200,Foundations of Computer Science,3,core,CS 18000;MA 16100
+CS 24000,Programming in C,3,core,CS 18000
+CS 25000,Computer Architecture,4,core,CS 18200;CS 24000
+CS 25100,Data Structures and Algorithms,3,core,CS 18200;CS 24000
+CS 25200,Systems Programming,4,core,CS 25000;CS 25100
