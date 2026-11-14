@@ -59,7 +59,8 @@ app.mount(
 
 
 def get_database() -> Iterator[sqlite3.Connection]:
-    connection = connect_database(DATABASE_PATH)
+    # FastAPI may run dependency setup, endpoint, and cleanup in different threads.
+    connection = connect_database(DATABASE_PATH, check_same_thread=False)
     try:
         yield connection
     finally:

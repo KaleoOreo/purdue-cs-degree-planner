@@ -33,8 +33,10 @@ def initialize_database(connection: sqlite3.Connection) -> None:
     connection.commit()
 
 
-def connect_database(path: str) -> sqlite3.Connection:
-    connection = sqlite3.connect(path)
+def connect_database(
+    path: str, *, check_same_thread: bool = True,
+) -> sqlite3.Connection:
+    connection = sqlite3.connect(path, check_same_thread=check_same_thread)
     initialize_database(connection)
     return connection
 

@@ -1,4 +1,5 @@
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 
 from degree_planner.database import (
     connect_database,
@@ -34,6 +35,18 @@ def test_connect_database_initializes_database_file():
     ).fetchall()
 
     assert ("courses",) in tables
+
+
+def test_connect_database_can_allow_api_style_cross_thread_use(tmp_path):
+    connection = connect_database(
+        str(tmp_path / "planner.db"), check_same_thread=False,
+    )
+    try:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(load_courses, connection)
+            assert future.result() == []
+    finally:
+        connection.close()
 
 
 def test_save_course_inserts_course_row():
