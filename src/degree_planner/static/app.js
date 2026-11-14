@@ -45,7 +45,8 @@ function creditsFrom(inputId) {
 }
 
 function courseLine(course) {
-  return `${course.code} — ${course.title} (${course.credits} credits)`;
+  const unit = course.credits === 1 ? "credit" : "credits";
+  return `${course.code} — ${course.title} (${course.credits} ${unit})`;
 }
 
 function renderCourseList(container, courses, emptyMessage) {

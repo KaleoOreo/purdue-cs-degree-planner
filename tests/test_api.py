@@ -217,7 +217,7 @@ def test_frontend_endpoint_links_stylesheet():
 def test_frontend_endpoint_links_script():
     response = client.get("/")
 
-    assert '<script src="/static/app.js"></script>' in response.text
+    assert '<script src="/static/app.js?v=0.1.0"></script>' in response.text
 
 
 def test_static_script_endpoint_returns_javascript():

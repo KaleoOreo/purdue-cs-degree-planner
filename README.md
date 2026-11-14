@@ -104,15 +104,21 @@ prerequisite validation when it opens. Its buttons generate one or all future
 semesters and record completed courses. After recording a course, generate a
 new plan to use the updated completion record. Plans are previews: generating
 one does not mark courses complete. The catalog is empty until courses are
-imported into `data/planner.db`; for a small demonstration, run:
+imported into `data/planner.db`. For a fresh database, run:
 
 ```powershell
-degree-planner --database data/planner.db import tests/fixtures/courses.csv
+degree-planner --database data/planner.db import data/purdue_cs_core_demo.csv
+degree-planner --database data/planner.db validate
 ```
 
-This CSV is a learning fixture. The included curriculum JSON describes a
-verified subset of Purdue Software Engineering requirements, while a full
-Purdue course catalog and complete degree audit are still outside this version.
+The [demo catalog](data/purdue_cs_core_demo.md) contains a sourced, limited
+Purdue core example. It omits concurrent enrollment, grades, math placement,
+alternative credit, and term offerings. Import it only into a fresh database;
+the import command does not replace existing courses. The curriculum JSON
+describes a broader Software Engineering requirement subset, so the demo
+catalog alone cannot complete every displayed requirement. This version is a
+departmental planning prototype, not a complete degree audit or enrollment
+recommendation.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
