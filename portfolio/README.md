@@ -31,4 +31,4 @@ The planner keeps *recorded completions* separate from *courses added to a previ
 
 This is a departmental planning prototype. It does not model every Purdue degree requirement, concurrent enrollment, placement, minimum grades, alternative credit, term offerings, or enrollment availability. The eight-course demo cannot satisfy every requirement in the broader curriculum file. It should not be used as enrollment advice.
 
-The project was developed through guided learning and AI-assisted implementation. Commits and `codex-built/*-review-later` tags identify work to revisit before describing personal implementation details in an application or interview. Replace this draft with a contribution statement you can explain accurately in your own words.
+The project was developed through guided learning and AI-assisted implementation.
