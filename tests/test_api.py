@@ -214,6 +214,19 @@ def test_frontend_endpoint_links_stylesheet():
     assert 'href="/static/styles.css"' in response.text
 
 
+def test_frontend_endpoint_links_script():
+    response = client.get("/")
+
+    assert '<script src="/static/app.js"></script>' in response.text
+
+
+def test_static_script_endpoint_returns_javascript():
+    response = client.get("/static/app.js")
+
+    assert response.status_code == 200
+    assert "javascript" in response.headers["content-type"]
+
+
 def test_static_stylesheet_endpoint_returns_css():
     response = client.get("/static/styles.css")
 
